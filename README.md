@@ -1,5 +1,5 @@
 # Guadalupe Reporta Dashboard
-Guadalupe Reporta Dashboard created using Flutter Web and Firebase Hosting, with Live a Preview channels
+Guadalupe Reporta Dashboard created using Flutter and Firebase Hosting, with Live a Preview channels.
 
 ### Technologies:
 
