@@ -3,7 +3,7 @@ Guadalupe Reporta Dashboard created using Flutter Web and Firebase Hosting, with
 
 ### Technologies:
 
-* Flutter
+* Flutter web
 * Google maps
 
 ### Live
