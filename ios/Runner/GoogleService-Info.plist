@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>139336414552-1247dlo8f2qabvrvfkme8thlnai135qa.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.139336414552-1247dlo8f2qabvrvfkme8thlnai135qa</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>139336414552-gk9961uekibrt7a8d8lk74q3ghrf0mkv.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCnBeCsYckHPLJ1i5Nf-UJ9OyitKxea93I</string>
+	<key>GCM_SENDER_ID</key>
+	<string>139336414552</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.guadalupereportadashboard</string>
+	<key>PROJECT_ID</key>
+	<string>guadalupe-reporta</string>
+	<key>STORAGE_BUCKET</key>
+	<string>guadalupe-reporta.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:139336414552:ios:aa238f2fb1ce4de1f1a12d</string>
+	<key>DATABASE_URL</key>
+	<string>https://guadalupe-reporta-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

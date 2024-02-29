@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "139336414552",
+    "firebase_url": "https://guadalupe-reporta-default-rtdb.firebaseio.com",
+    "project_id": "guadalupe-reporta",
+    "storage_bucket": "guadalupe-reporta.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139336414552:android:0a7209461c1a0ff1f1a12d",
+        "android_client_info": {
+          "package_name": "com.bbs.guadalupereporta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "139336414552-gk9961uekibrt7a8d8lk74q3ghrf0mkv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bbs.guadalupereporta",
+            "certificate_hash": "12f603f55b7b269b79146486d0d37b19c74a6dd8"
+          }
+        },
+        {
+          "client_id": "139336414552-mlgs290o30bs4puevq4e20qai86snm30.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bbs.guadalupereporta",
+            "certificate_hash": "d53e67adce8b92a16409c1c14a59876f6e49634f"
+          }
+        },
+        {
+          "client_id": "139336414552-vv3ogceg157mn8jcqgfglgk2oeri1idi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bbs.guadalupereporta",
+            "certificate_hash": "4c6d025a552371e13dfa9f5b750f745552f032ba"
+          }
+        },
+        {
+          "client_id": "139336414552-90cg95uqp2mlrjo23k3ev7qbqbeleget.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_pfA2lTPioJEGan9j3wlkc7P4tmbmrtg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "139336414552-7hcvhhno4v38iqltkqsg8qal0n1nfvl0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139336414552:android:fa04ebdc59e3ca45f1a12d",
+        "android_client_info": {
+          "package_name": "com.example.guadalupereportadashboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "139336414552-90cg95uqp2mlrjo23k3ev7qbqbeleget.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_pfA2lTPioJEGan9j3wlkc7P4tmbmrtg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "139336414552-7hcvhhno4v38iqltkqsg8qal0n1nfvl0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
