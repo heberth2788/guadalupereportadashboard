@@ -26,10 +26,8 @@ class AuthenticationGate extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
       ),
-      
       //initialRoute: ,
       //routes: ,
-      
       home: StreamBuilder<User?>(
           // Listen to FirebaseAuth's authStateChanges: a Stream with either
           // the current user (if they are signed in), or null if they are not.

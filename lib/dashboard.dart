@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,13 +9,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'firebase/firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart'; */
 
-
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     // TODO: manage the `App title` state
     const appTitle = "Guadalupe Reporta Dashboard";
     return const DashboardPage(title: appTitle);
@@ -56,7 +56,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// To manage the Date filters state: From
-  DateTime selectedDateFrom = DateTime.now().subtract(const Duration(days: 15));
+  DateTime selectedDateFrom = DateTime.now().subtract(const Duration(days: 21));
   Future<void> _onPressedDatePickerFrom(BuildContext context) async {
     final DateTime? dateTimePicket = await showDatePicker(
       context: context,
@@ -123,6 +123,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  /// Home dashboard widget building
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,7 +150,7 @@ class _DashboardPageState extends State<DashboardPage> {
               onMapCreated: _onMapCreated,
             ),
           ),
-          // Right panel : filters, reports, information 
+          // Right panel : filters, reports, information
           Expanded(
             flex: 2,
             child: Padding(
@@ -305,6 +306,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
+      // Navigation drawer
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -314,36 +316,37 @@ class _DashboardPageState extends State<DashboardPage> {
                   color: Theme.of(context).colorScheme.background,
                 ),
                 child: Column(children: <Widget>[
-                  // const Image(
-                  //   image: AssetImage('images/person.png'),
-                  // ),
                   Text(
-                    "Heberth Deza",
+                    FirebaseAuth.instance.currentUser?.email ?? '-',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onBackground,
                       fontSize: 24,
                     ),
                   ),
                 ])),
-            ListTile(
+            /* ListTile(
               selected: (_drawerSelectedIndex == 0),
               leading: const Icon(Icons.account_circle),
               title: const Text('Account'),
               onTap: () {
                 setState(() {
-                  _onItemDrawerTapped(0); // _selectedIndex = 0;
-                  Navigator.pop(context);
+                  _onItemDrawerTapped(0);
                 });
+                Navigator.pop(context);
               },
-            ),
+            ), */
             ListTile(
               selected: (_drawerSelectedIndex == 1),
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
               onTap: () {
                 setState(() {
-                  _onItemDrawerTapped(1); // _selectedIndex = 1;
-                  Navigator.pop(context);
+                  _onItemDrawerTapped(1);
+                });
+                FirebaseAuth.instance.signOut();
+                Navigator.pop(context);
+                SignedOutAction((context) {
+                  Navigator.of(context).pop();
                 });
               },
             ),

@@ -62,7 +62,6 @@ library;
 // To import libraries
 // E.g: import 'path/to/my_other_file.dart';
 import 'dart:io';
-import 'dart:math';
 
 
 // void main() {
@@ -86,8 +85,9 @@ void dartTesting() {
 
   // Functions : (nested function) -----------------------------------------------------------------------------------------
   int fibonacci(int n) {
-    if(n == 0 || n == 1)
+    if(n == 0 || n == 1) {
       return n;
+    }
     return fibonacci(n - 1) + fibonacci(n - 2);
   }
   void voidFunction() {
