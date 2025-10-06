@@ -63,9 +63,11 @@ library;
 // E.g: import 'path/to/my_other_file.dart';
 import 'dart:io';
 
+import 'package:guadalupereportadashboard/util/constants.dart';
+
 
 // void main() {
-//   print('Heberth Dart & Flutter world. \nBy HD.');
+//   logMsg('Heberth Dart & Flutter world. \nBy HD.');
 // }
 
 void dartTesting() {
@@ -91,11 +93,11 @@ void dartTesting() {
     return fibonacci(n - 1) + fibonacci(n - 2);
   }
   void voidFunction() {
-    print('voidFunction');
+    logMsg('voidFunction');
   }
 
   // Using shorhand sintaxt for anonymous functions : => Arrow
-  //flyByObjects.where((element) => element.contains('turn')).forEach((element) { print(element); });
+  //flyByObjects.where((element) => element.contains('turn')).forEach((element) { logMsg(element); });
   flyByObjects.where((element) => element.contains('turn')).forEach(print);
 
   // Comments -----------------------------------------------------------------------------------------
@@ -115,11 +117,9 @@ void dartTesting() {
   voyager3.describe();
 
   const yourPlanet = Planet.earth;
-  if(!yourPlanet.isGiant) {
-      print('Your plannet is not a "giant planet"');
+  if (!yourPlanet.isGiant) {
+      logMsg('Your plannet is not a "giant planet"');
   }
-
-
 }
 
 // Classes -----------------------------------------------------------------------------------------
@@ -142,13 +142,13 @@ class Spacecraft {
 
   // Methods -----------------------------------------------------------------------------------------
   void describe() {
-    print('Spacecraft : $name');
+    logMsg('Spacecraft : $name');
     var launchDate = this.launchDate;
     if(launchDate != null) {
       int years = DateTime.now().difference(launchDate).inDays;
-      print('Launched : $launchYear ($years years ago)');
+      logMsg('Launched : $launchYear ($years years ago)');
     } else {
-      print('Unlaunched');
+      logMsg('Unlaunched');
     }
   }
 }
@@ -171,8 +171,8 @@ enum Planet {
     {
       required this.planetType, 
       required this.moons, 
-      required this.hasRings
-      }
+      required this.hasRings,
+    }
   );
 
   // All instance variables are final
@@ -187,6 +187,7 @@ enum Planet {
 // Inheritance -----------------------------------------------------------------------------------------
 // Dart support single inheritance
 class Orbiter extends Spacecraft {
+
   double altitude;
 
   Orbiter(super.name, DateTime super.launchDate, this.altitude);
@@ -198,7 +199,7 @@ mixin Piloted {
   int astronauts = 1;
 
   void describeCrew() {
-    print('Number of astronatus : $astronauts');
+    logMsg('Number of astronatus : $astronauts');
   }
 }
 // Adding mixin's capabilities to the class : using the 'with' keyword
@@ -209,6 +210,7 @@ class PilotedCraft extends Spacecraft with Piloted {
 
 // Interfaces -----------------------------------------------------------------------------------------
 class MockSapaceship implements Spacecraft {
+
   @override
   DateTime? launchDate;
 
@@ -229,11 +231,12 @@ class MockSapaceship implements Spacecraft {
 
 // Abstract classes -----------------------------------------------------------------------------------------
 abstract class Describable {
+
   void describe();
   void describeWithEmphasis() {
-    print('=========');
+    logMsg('=========');
     describe();
-    print('=========');
+    logMsg('=========');
   }
 }
 
@@ -242,7 +245,7 @@ abstract class Describable {
 const oneSecont = Duration(seconds: 1);
 Future<void> printWithDelay(String msg) async {
   await Future.delayed(oneSecont);
-  print(msg);
+  logMsg(msg);
 }
 
 // Exceptions -----------------------------------------------------------------------------------------
@@ -256,16 +259,11 @@ Future<void> describeFlybyObjects(List<String> flybyObjects) async {
   try {
     for(final object in flybyObjects) {
       var description = await File('$object.txt').readAsString();
-      print(description);
+      logMsg(description);
     }
   } on IOException catch(e) {
-    print('Could not describe object : $e');
+    logMsg('Could not describe object : $e');
   } finally {
     flybyObjects.clear();
   }
 }
-
-
-
-
-

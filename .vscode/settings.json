@@ -1,3 +1,10 @@
 {
-    "workbench.editor.revealIfOpen": true
+    "workbench.editor.revealIfOpen": true,
+    "editor.rulers": [
+       { "column": 90, "color": "#6e6868" }, 
+    ],
+    "emmet.syntaxProfiles": {
+        
+
+    },
 }

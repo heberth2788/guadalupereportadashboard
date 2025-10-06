@@ -45,15 +45,25 @@
 <body>
   <script>
     window.addEventListener('load', function(ev) {
+      // Setup Html renderer or CanvasKit renderer
+      // [START setup_html_renderer]
+      let useHtmlRenderer = true;
+      // [STOP setup_html_renderer]
+
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
         },
         onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
+          // [START setup_html_renderer]
+          let config = {
+            renderer: useHtmlRenderer ? "html" : "canvaskit",
+          };
+          engineInitializer.initializeEngine(config).then(function(appRunner) {
             appRunner.runApp();
           });
+          // [END setup_html_renderer]
         }
       });
     });
