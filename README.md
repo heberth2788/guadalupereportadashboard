@@ -5,6 +5,10 @@ Guadalupe Reporta Dashboard created using Flutter and Firebase Hosting, with Liv
 
 * Flutter web
 * Google maps
+* Firebase Hosting
+* Firebase Realtime Database
+* Firebase Storage
+* Firebase Auth
 
 ### Live
 * https://guadalupe-reporta.web.app/

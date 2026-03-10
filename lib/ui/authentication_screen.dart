@@ -36,9 +36,7 @@ class AuthenticationScreen extends StatelessWidget {
               // `SigInscreen` widget from `FlutterFire UI` package, this allows
               // the users to sigin.
               return SignInScreen(
-                providers: [
-                  EmailAuthProvider(),
-                ],
+                providers: [ EmailAuthProvider() ],
                 showPasswordVisibilityToggle: true,
               );
             }

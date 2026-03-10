@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:guadalupereportadashboard/util/constants.dart';
 
 class ReportRepository {
 
@@ -18,14 +21,14 @@ class ReportRepository {
   Map<String, Report> get reportMap => _reportMap;
 
   ///////////////////////////////////////////////////////////////////////////////////////
-  /// Methods for fetching data from Firebase Database
+  /// Methods for Firebase Realtime Database
   ///////////////////////////////////////////////////////////////////////////////////////
 
   /// Fetch the report by date range(From - To)
   /// Called every time  data is changed
   void fetchReportByDateRange(String dateFrom, String dateTo, Function() notifyCallback) {
     
-    print('ReportRepository > fetchReportByDateRange > $dateFrom - $dateTo');
+    logMsg('ReportRepository', msg: 'fetchReportByDateRange > $dateFrom - $dateTo');
 
       DatabaseReference dfReports = _fbDatabase.ref('/day-users-reports');
       Query query = dfReports.orderByKey().startAt(dateFrom).endAt(dateTo);
@@ -34,7 +37,7 @@ class ReportRepository {
           final key = reportChild.key?.toString() ?? '';
           final userId = reportChild.child('userId').value?.toString() ?? '';
           final userName = reportChild.child('userName').value?.toString() ?? '';
-          print('$key - $userName - $userId');
+          logMsg('ReportRepository', msg: '$key - $userName - $userId');
         }
       });
   }
@@ -44,7 +47,7 @@ class ReportRepository {
   /// TODO : change to an asynchronous method
   void fetchAllReports(Function() notifyCallback) {
 
-    print('ReportRepository > fetchAllReports');
+    logMsg('ReportRepository', msg: 'fetchAllReports');
 
     DatabaseReference dfReports = _fbDatabase.ref('/reports');
 
@@ -90,22 +93,24 @@ class ReportRepository {
         report.visible = visible;
 
         _reportMap[key] = report;
-        print(report.toString());
+        logMsg('ReportRepository', msg: report.toString());
       }
       notifyCallback();
     }, onError: (dynamic error) {
-      print(error.toString());
+      logMsg('ReportRepository', msg: error.toString());
     });
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////
-  /// Methods for fetching data from Firebase Storage
+  /// Methods for Firebase Storage
   ///////////////////////////////////////////////////////////////////////////////////////
   
-  /// Fetch the images from a specific used and report
-  Future<List<String>> fetchImagesFromUserAndReport(String userId, String reportId) async {
+  /// Fetch the images from the reporte of a specific used and report
+  Future<List<String>> fetchReportImagesFromUserAndReport(String userId, String reportId) async {
+
+    logMsg('ReportRepository', msg: 'fetchReportImagesFromUserAndReport'); 
     
-    Reference rPhotos = _fbStorage.ref('/user-reports-photos/$userId/$reportId');
+    final Reference rPhotos = _fbStorage.ref('/user-reports-photos/$userId/$reportId');
 
     final ListResult photosList = await rPhotos.listAll();
     //print('fetchImagesFromReport quantity : ${ photosList.items.length }');
@@ -118,5 +123,68 @@ class ReportRepository {
     }
     //print('fetchImagesFromReport : C : ${ photosUrlList.length }');
     return photosUrlList;
+  }
+
+  /// Fetch the images from the response of a specific used and report
+  Future<List<String>> fetchResponseImagesFromUserAndReport(String userId, String reportId) async {
+
+    logMsg('ReportRepository', msg: 'fetchResponseImagesFromUserAndReport'); 
+    
+    final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId');
+
+    final ListResult photosList = await rPhotos.listAll();
+    //print('fetchResponseImagesFromReport quantity : ${ photosList.items.length }');
+    List<String> photosUrlList = [];
+    String pivot;
+    for(Reference photoRef in photosList.items) {
+      pivot = await photoRef.getDownloadURL();      
+      photosUrlList.add(pivot);
+      //print('fetchImagesFromReport : B : ${ photosUrlList.length }');
+    }
+    //print('fetchImagesFromReport : C : ${ photosUrlList.length }');
+    return photosUrlList;
+  }
+
+  /// Upload an image file to firebase storage for a specidic user and report
+  Future<String> uploadResponseImage(
+    Uint8List imageBytes, 
+    String imageName, 
+    String userId, 
+    String reportId,
+  ) async {
+    logMsg('ReportRepository', msg: 'uploadResponseImage');
+
+    late String publicUrlPhoto;
+    final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
+
+    try {
+      await rPhotos.putData(imageBytes);
+      publicUrlPhoto = await rPhotos.getDownloadURL();
+    } on FirebaseException catch (e) {
+      logMsg('ReportRepository', msg: 'uploadResponseImage > error : $e');
+      publicUrlPhoto = "";
+      // e.g, e.code == 'canceled'
+    }
+    return publicUrlPhoto;
+  }
+
+  /// Save the response message to firebase database for a specific user and report
+  Future<void> saveResponseMessage(
+    String userId,
+    String reportId,
+    String description,
+    String authorityId,
+    String authorityName,
+  ) async {
+    logMsg('ReportRepository', msg: 'saveResponseMessage');
+    final DatabaseReference dfResponses = _fbDatabase.ref('/responses/$userId/$reportId');
+    final int creationTimestamp = DateTime.now().millisecondsSinceEpoch;
+    await dfResponses.set({
+      'description': description,
+      'authorityId': authorityId,
+      'authorityName': authorityName,
+      'creationTimestamp': creationTimestamp,
+      'visible': 1,
+    });
   }
 }

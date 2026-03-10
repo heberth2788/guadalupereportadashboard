@@ -4,15 +4,16 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 const double zoomMapValue = 15.0;
-const String appTitle = "Guadalupe Reporta Dashboard";
+const String appTitle = "Panel de reportes";
 const int  startingYear = 2023;
-const int rangeDays = 21;
+const int rangeDays = 63; //21;
 const Color seedColor = Color.fromRGBO(60, 105, 27, 0); // Const for material theme
 const Size markerSize = Size(40, 40); // Size of the pin on the map
+const int maxAllowedResponsePhotos = 3; // Maximum number of response photos allowed
 
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 13));
 const TextStyle reportTitleTextStyle = TextStyle(fontSize: 17, fontWeight: FontWeight.bold);
-const TextStyle reportStatusTextStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.normal, fontStyle: FontStyle.italic);
+const TextStyle reportStatusTextStyle = TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontStyle: FontStyle.normal);
 const TextStyle reportUserAndDateTextStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.normal);
 const TextStyle reportCommentTextStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.normal);
 
@@ -30,11 +31,13 @@ String getDatetimeFromTimestamp(int? timestamp) {
 /// Parse the int status value to its string value
 String getStringStatus(int? intStatus) {
   if (intStatus == 0) {
-    return 'Reported';
+    return '[ REPORTADO ]';
   } else if (intStatus == 1) {
-    return 'InProgress';
+    return '[ EN PROGRESO ]';
   } else if (intStatus == 2) {
-    return 'Done';
+    return '[ ATENDIDO ]';
+  } else if (intStatus == 3) {
+    return '[ ANULADO ]';
   }
   return '-';
 }

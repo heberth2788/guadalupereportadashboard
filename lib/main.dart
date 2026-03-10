@@ -4,8 +4,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:guadalupereportadashboard/ui/authentication_screen.dart';
-
-// For firebase support
 import 'package:firebase_core/firebase_core.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
 import 'firebase/firebase_options.dart';
@@ -24,7 +22,6 @@ Future<void> main() async {
 
   /// Setup firebase emulators if debug mode
   if (kDebugMode) {
-    logMsg('main', msg: 'Setting up firebase emulators');
     await setupDebugModeForFirebase();
   }
 
@@ -34,6 +31,7 @@ Future<void> main() async {
 
 Future<void> setupDebugModeForFirebase() async {
   try {
+    logMsg('main', msg: 'Setting up firebase emulators');
     // Auth emulator
     await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
     // Firebase Storage emulator

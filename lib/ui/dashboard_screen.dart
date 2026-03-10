@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
@@ -43,10 +45,13 @@ class DashboardPage extends StatefulWidget {
 /// State of the Dashboard page
 class _DashboardPageState extends State<DashboardPage> {
 
+  /// Controller for the response text field
+  final TextEditingController _responseTextController = TextEditingController();
+
   /// The report that is selected on the map
   Report? _selectedReport;
   bool _visibilityReportCard = false;
-  bool _visibilityPhotos = false;
+  bool _visibilityReportPhotos = false;
 
   /// To manage Google Maps state
   late GoogleMapController _gmController;
@@ -77,7 +82,7 @@ class _DashboardPageState extends State<DashboardPage> {
     if (dateTimePicket != null && dateTimePicket != _selectedDateFrom) {
       setState(() {
         _selectedDateFrom = dateTimePicket;
-        print('_DashboardPageState > _onPressedDatePickerFrom : $_selectedDateFrom');
+        logMsg('_DashboardPageState',  msg: '_onPressedDatePickerFrom > $_selectedDateFrom');
         
       });
     }
@@ -102,7 +107,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// To manage Report's Type dropdown button list
   static const List<String> _reportTypeList = <String>[
-    'All',
+    'Todo',
     'Pista o vereda en mal estado',
     'Basura y/o desmonte en la calle',
     'Arbol por podar',
@@ -121,11 +126,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// To manage Report's Status dropdown button list
   static const List<String> _reportStatusList = <String>[
-    'All',
-    'To Check',
-    'In Progress',
-    'Done',
-    '* Inappropriate',
+    'Todo',
+    'Reportado',
+    'En progreso',
+    'Atendido',
+    'Anulado',
   ];
   String _selectedReportStatus = _reportStatusList.first;
   void _onChangeReportStatus(String? newReportStatus) {
@@ -192,7 +197,7 @@ class _DashboardPageState extends State<DashboardPage> {
             setState(() {
               _selectedReport = pivotReport;
               _visibilityReportCard = true;
-              _visibilityPhotos = false;  
+              _visibilityReportPhotos = false;
             });
           },
         );
@@ -215,8 +220,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// Generate the widget of the photos of the selected report
-  List<Widget> _generatePhotoWidgets(List<String> photosUrlList) {
-    print('_DashboardPageState > _generatePhotoWidgets');
+  List<Widget> _generatePhotoWidgets(List<String> photosUrlList, { bool isRemoveAvailable = false }) {
+    logMsg('dashboard_screen', msg: '_DashboardPageState > _generatePhotoWidgets');
     List<Widget> listOfWidgets = [];
     int flexValue = photosUrlList.length;
     for (var photoUrlPivot in photosUrlList) {
@@ -225,22 +230,48 @@ class _DashboardPageState extends State<DashboardPage> {
               flex: flexValue,
               child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
-                  child: Stack(children: <Widget>[
-                    // Support for url links
-                    InkWell(
-                      child: Center(
-                        child: FadeInImage.memoryNetwork(
-                            placeholder: kTransparentImage,
-                            image: photoUrlPivot.toString())),
-                      onTap: () {
-                        launchUrl(Uri.parse(photoUrlPivot.toString()));
-                      }), // Open url on the browser when click
-                      //onTap: () => launchUrlString(photoUrlPivot.toString()), // Open url on the browser when click
-                    //),
-                  ]))));
+                  child: Stack(
+                    children: <Widget>[
+                      // Support for url links: Open url on the browser when click
+                      InkWell(
+                        child: Center(
+                          child: FadeInImage.memoryNetwork(
+                              placeholder: kTransparentImage,
+                              image: photoUrlPivot.toString(),
+                              height: 150.0,
+                              fit: BoxFit.cover,
+                              fadeInDuration: const Duration(milliseconds: 200),
+                              fadeInCurve: Curves.easeIn,
+                          )
+                        ),
+                        onTap: () {
+                          launchUrl(Uri.parse(photoUrlPivot.toString()));
+                        }
+                      ),
+                      Positioned(
+                        top: 0.0,
+                        right: 0.0,
+                        child: isRemoveAvailable ? Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.delete,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            onPressed: () {
+                              logMsg('dashboard_screen', msg: 'delete image button pressed ${ photoUrlPivot.toString() }');
+                            }
+                          ),
+                        ) : Container(),
+                      )
+                    ]
+                  )
+                )
+            )
+        );
     }
     //setState(() {
-    _visibilityPhotos = true;  
+    _visibilityReportPhotos = true;
     //});
     return listOfWidgets;
   }
@@ -248,11 +279,11 @@ class _DashboardPageState extends State<DashboardPage> {
   // Button pressed events
   // [START button_events]
   void _generalReportButtonPressed() {
-    print('generalReportButtonPressed');
+    logMsg('dashboard_screen', msg: '_generalReportButtonPressed');
   }
 
   void _performanceReportButtonPressed() {
-    print('performanceReportButtonPressed');
+    logMsg('dashboard_screen', msg: '_performanceReportButtonPressed');
   }
 
   void _inappropriateButtonPressed() {
@@ -260,13 +291,41 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _workOrderButtonPressed() {
-    print('workOrderButtonPressed');
+    logMsg('dashboard_screen', msg: '_workOrderButtonPressed');
   }
 
   void _inProgressButtonPressed() {
     print('inProgressButtonPressed');
   }
-  // [END button_events]
+  
+  Future<void> _uploadResponseImage(ReportViewModel viewModel) async{
+    logMsg('_DashboardPageState', msg: '_uploadResponseImage');
+
+    // Use image picker to select an image from local storage
+    final FilePickerResult? filePickerResult = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+
+    if (filePickerResult == null || filePickerResult.files.isEmpty) {
+      logMsg('_DashboardPageState', msg: '_uploadResponseImage > User canceled the picker');
+      return;
+    }
+
+    final Uint8List? fileBytes = filePickerResult.files.first.bytes;
+    final String? fileExtention = filePickerResult.files.first.extension;
+    if (fileBytes == null || fileExtention == null) {
+      logMsg('_DashboardPageState', msg: '_uploadResponseImage > No file bytes or file extention');
+      return;
+    }
+
+    // Upload the image to firebase storage
+    if (_selectedReport == null) {
+      logMsg('_DashboardPageState', msg: '_uploadResponseImage > No report selected');
+      return;
+    }
+    viewModel.uploadResponseImage(fileBytes, fileExtention, _selectedReport!.userId!, _selectedReport!.id);
+  }
 
   /// Called when this object is inserted into the tree.
   /// The framework will call this method exactly once
@@ -293,8 +352,7 @@ class _DashboardPageState extends State<DashboardPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                widget
-                    ._title, // A [State] object's configuration is the corresponding [StatefulWidget] instance(_title)
+                widget._title, // A [State] object's configuration is the corresponding [StatefulWidget] instance(_title)
               ),
             ],
           ),
@@ -304,7 +362,7 @@ class _DashboardPageState extends State<DashboardPage> {
           children: <Widget>[
             // Google map Widget
             Expanded(
-              flex: 8,
+              flex: 7,
               child: GoogleMap(
                 //mapType: MapType.normal,
                 myLocationEnabled: true,
@@ -316,7 +374,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             // Right panel : filters, reports generation, information
             Expanded(
-              flex: 2,
+              flex: 3,
               child: Padding(
                 padding: const EdgeInsets.all(13.0),
                 child: Column(
@@ -327,59 +385,50 @@ class _DashboardPageState extends State<DashboardPage> {
                           padding: const EdgeInsets.all(9.0),
                           child: Column(
                             children: <Widget>[
-                              // Date from:
+                              // Date range:
                               Row(
                                 children: <Widget>[
                                   const Expanded(
-                                    flex: 3,
-                                    child: Text('From : '),
+                                    flex: 2,
+                                    child: Text('Fechas :'),
                                   ),
                                   Expanded(
-                                    flex: 7,
+                                    flex: 4,
                                     child: ElevatedButton(
-                                        onPressed: () =>
-                                            _onPressedDatePickerFrom(context),
+                                        onPressed: () => _onPressedDatePickerFrom(context),
                                         child: Row(
                                           children: <Widget>[
                                             Expanded(
-                                              child: Text(DateFormat(
-                                                      'dd/MM/yyyy')
+                                              child: Text(DateFormat('dd/MM/yyyy')
                                                   .format(_selectedDateFrom)),
                                             ),
-                                            const Icon(Icons.date_range),
+                                            //const Icon(Icons.date_range),
                                           ],
                                         )),
                                   ),
-                                ],
-                              ),
-                              const Padding(padding: EdgeInsets.symmetric(vertical: 6.0)),
-                              // Date to:
-                              Row(
-                                children: <Widget>[
-                                  const Expanded(
-                                    flex: 3,
-                                    child: Text('To : '),
-                                  ),
+                                  const Padding(padding: EdgeInsets.only(right: 9.0)),
                                   Expanded(
-                                    flex: 7,
+                                    flex: 4,
                                     child: ElevatedButton(
-                                        onPressed: () =>
-                                            _onPressedDatePickerTo(context),
-                                        child: Row(
-                                          children: <Widget>[
-                                            Expanded(
-                                              child: Text(
-                                                  DateFormat('dd/MM/yyyy')
-                                                      .format(_selectedDateTo)),
-                                            ),
-                                            const Icon(Icons.date_range),
-                                          ],
-                                        )),
+                                      onPressed: () =>
+                                          _onPressedDatePickerTo(context),
+                                      child: Row(
+                                        children: <Widget>[
+                                          Expanded(
+                                            child: Text(
+                                                DateFormat('dd/MM/yyyy')
+                                                    .format(_selectedDateTo)),
+                                          ),
+                                          //const Icon(Icons.date_range),
+                                        ],
+                                      )
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
-                          )),
+                          )
+                      ),
                     ),
                     // Filters : Type and Status
                     Card(
@@ -391,7 +440,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               children: <Widget>[
                                 const Expanded(
                                   flex: 3,
-                                  child: Text('Type : '),
+                                  child: Text('Tipo : '),
                                 ),
                                 Expanded(
                                   flex: 7,
@@ -418,7 +467,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               children: <Widget>[
                                 const Expanded(
                                   flex: 3,
-                                  child: Text('Status : '),
+                                  child: Text('Estado : '),
                                 ),
                                 Expanded(
                                   flex: 7,
@@ -445,34 +494,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ),
-                    // Padding
                     const Padding(padding: EdgeInsets.only(top: 9.0)),
-                    // Button : Generate report
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: ElevatedButton(
-                              style: buttonStyle,
-                              onPressed: _generalReportButtonPressed,
-                              child: const Text('General report')),
-                        ),
-                      ],
-                    ),
-                    // Padding
-                    const Padding(padding: EdgeInsets.only(top: 9.0)),
-                    // Button : performance report
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: ElevatedButton(
-                              style: buttonStyle,
-                              onPressed: _performanceReportButtonPressed,
-                              child: const Text('Performance report')),
-                        ),
-                      ],
-                    ),
-                    const Padding(padding: EdgeInsets.only(top: 9.0)),
-                    // Report selected's information
+                    // Selected user report card
                     Visibility(
                       visible: _visibilityReportCard,
                       child: Card(
@@ -480,7 +503,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           padding: const EdgeInsets.all(9.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
+                            children: <Widget> [
                               // Title of the report
                               Text(
                                 style: reportTitleTextStyle,
@@ -517,19 +540,15 @@ class _DashboardPageState extends State<DashboardPage> {
                                 textAlign: TextAlign.end,
                               ),
                               const Padding(padding: EdgeInsets.only(top: 6.0)),
-                              // Comment of the report
-                              Text(
-                                style: reportCommentTextStyle,
-                                _selectedReport?.description ?? '-',
-                                textAlign: TextAlign.start,
-                              ),
-                              const Padding(padding: EdgeInsets.only(top: 9.0)),
                               // Photos of the report
                               Stack(
                                 children: <Widget>[
-                                  const Padding(padding: EdgeInsets.only(top: 3.0), child: Center(child: CircularProgressIndicator())),
                                   Visibility(
-                                    visible: _visibilityPhotos,
+                                    visible: !_visibilityReportPhotos,
+                                    child: const Center(child: CircularProgressIndicator()),
+                                  ),
+                                  Visibility(
+                                    visible: _visibilityReportPhotos,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                       children: _generatePhotoWidgets(reportViewModel.currentReportPhotos)
@@ -538,34 +557,129 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ]
                               ),
                               const Padding(padding: EdgeInsets.only(top: 9.0)),
-                              // InProgress button
-                              Row(children: <Widget>[
-                                Expanded(
-                                    child: ElevatedButton(
-                                        style: buttonStyle,
-                                        onPressed: _inProgressButtonPressed,
-                                        child: const Text('InProgress'))),
-                              ]),
-                              const Padding(padding: EdgeInsets.only(top: 9.0)),
-                              // Inappropiate and WorkOrder buttons
+                              // Comment of the report
+                              Text(
+                                style: reportCommentTextStyle,
+                                _selectedReport?.description ?? '-',
+                                textAlign: TextAlign.start,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Selected autorithy response card
+                    Visibility(
+                      visible: _visibilityReportCard,
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(9.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget> [
+                              // Title of the response and annular button
                               Row(
-                                  //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    Expanded(
-                                        flex: 5,
-                                        child: ElevatedButton(
-                                            style: buttonStyle,
-                                            onPressed:
-                                                _inappropriateButtonPressed,
-                                            child: const Text('Inappropiate'))),
-                                    const Spacer(),
-                                    Expanded(
-                                        flex: 5,
-                                        child: ElevatedButton(
-                                            style: buttonStyle,
-                                            onPressed: _workOrderButtonPressed,
-                                            child: const Text('Create WO'))),
-                                  ]),
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    style: reportTitleTextStyle,
+                                    'Respuesta',
+                                    textAlign: TextAlign.start,
+                                  ),
+                                  ElevatedButton(
+                                    style: buttonStyle,
+                                    onPressed: _workOrderButtonPressed,
+                                    child: const Text('Anular'),
+                                  ),
+                                ],
+                              ),
+                              const Padding(padding: EdgeInsets.only(top: 9.0)),
+                              // Photos of the response
+                              Stack(
+                                children: <Widget>[
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 3.0), 
+                                    //child: Center(child: CircularProgressIndicator()),
+                                  ),
+                                  Visibility(
+                                    visible: true,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: _generatePhotoWidgets(reportViewModel.currentResponsePhotos, isRemoveAvailable: true)
+                                    )
+                                  ),
+                                ]
+                              ),
+                              const Padding(padding: EdgeInsets.only(top: 9.0)),
+                              // Upload image progress indicator
+                              Visibility(
+                                visible: !reportViewModel.isImageUploadProcessFinished,
+                                child: LinearProgressIndicator(
+                                  value: reportViewModel.isImageUploadProcessFinished ? 1.0 : null,
+                                  backgroundColor: Colors.grey,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    reportViewModel.isImageUploadProcessFinished ? Colors.green : Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              const Padding(padding: EdgeInsets.only(top: 9.0)),
+                              // InProgress, Done and Photo buttons
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                    style: buttonStyle,
+                                    onPressed: _inProgressButtonPressed,
+                                    child: const Text('En progreso'),
+                                  ),
+                                  const Padding(padding: EdgeInsets.only(right: 9.0)),
+                                  ElevatedButton(
+                                    style: buttonStyle,
+                                    onPressed: _workOrderButtonPressed,
+                                    child: const Text('Atendido'),
+                                  ),
+                                  const Spacer(),
+                                  ElevatedButton(
+                                    style: buttonStyle,
+                                    onPressed:
+                                    reportViewModel.isMaxPhotosReached ?
+                                        () => _uploadResponseImage(Provider.of<ReportViewModel>(context, listen: false))
+                                        : null,
+                                    child: const Text('Foto'),
+                                  ),
+                                ]
+                              ),
+                              const Padding(padding: EdgeInsets.only(top: 9.0)),
+                              // Text field for the response
+                              TextField(
+                                controller: _responseTextController,
+                                keyboardType: TextInputType.multiline,
+                                maxLines: 2,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  hintText: 'Escribir respuesta...',
+                                ),
+                                textCapitalization: TextCapitalization.sentences,
+                                autofocus: true,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  fontSize: 13,
+                                ),
+                                showCursor: true,
+                                maxLength: 200,
+                              ),
+                              const Padding(padding: EdgeInsets.only(top: 6.0)),
+                              // Save button
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  ElevatedButton(
+                                    style: buttonStyle,
+                                    onPressed: () { logMsg("dashboard_screen", msg: "Guardar"); },
+                                    child: const Text('Guardar'),
+                                  ),
+                                ]
+                              ),
                             ],
                           ),
                         ),
