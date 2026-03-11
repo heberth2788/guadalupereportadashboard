@@ -382,52 +382,55 @@ class _DashboardPageState extends State<DashboardPage> {
                     // Filters : Date From, Date To
                     Card(
                       child: Padding(
-                          padding: const EdgeInsets.all(9.0),
-                          child: Column(
-                            children: <Widget>[
-                              // Date range:
-                              Row(
-                                children: <Widget>[
-                                  const Expanded(
-                                    flex: 2,
-                                    child: Text('Fechas :'),
+                        padding: const EdgeInsets.all(9.0),
+                        child: Column(
+                          children: <Widget>[
+                            // Date range:
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                      'Fechas :',
+                                      style: Theme.of(context).textTheme.titleSmall,
                                   ),
-                                  Expanded(
-                                    flex: 4,
-                                    child: ElevatedButton(
-                                        onPressed: () => _onPressedDatePickerFrom(context),
-                                        child: Row(
-                                          children: <Widget>[
-                                            Expanded(
-                                              child: Text(DateFormat('dd/MM/yyyy')
-                                                  .format(_selectedDateFrom)),
-                                            ),
-                                            //const Icon(Icons.date_range),
-                                          ],
-                                        )),
-                                  ),
-                                  const Padding(padding: EdgeInsets.only(right: 9.0)),
-                                  Expanded(
-                                    flex: 4,
-                                    child: ElevatedButton(
-                                      onPressed: () =>
-                                          _onPressedDatePickerTo(context),
+                                ),
+                                Expanded(
+                                  flex: 4,
+                                  child: ElevatedButton(
+                                      onPressed: () => _onPressedDatePickerFrom(context),
                                       child: Row(
                                         children: <Widget>[
                                           Expanded(
-                                            child: Text(
-                                                DateFormat('dd/MM/yyyy')
-                                                    .format(_selectedDateTo)),
+                                            child: Text(DateFormat('dd/MM/yyyy')
+                                                .format(_selectedDateFrom)),
                                           ),
                                           //const Icon(Icons.date_range),
                                         ],
-                                      )
-                                    ),
+                                      )),
+                                ),
+                                const Padding(padding: EdgeInsets.only(right: 9.0)),
+                                Expanded(
+                                  flex: 4,
+                                  child: ElevatedButton(
+                                    onPressed: () =>
+                                        _onPressedDatePickerTo(context),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Text(
+                                              DateFormat('dd/MM/yyyy')
+                                                  .format(_selectedDateTo)),
+                                        ),
+                                        //const Icon(Icons.date_range),
+                                      ],
+                                    )
                                   ),
-                                ],
-                              ),
-                            ],
-                          )
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
                       ),
                     ),
                     // Filters : Type and Status
@@ -436,38 +439,50 @@ class _DashboardPageState extends State<DashboardPage> {
                         padding: const EdgeInsets.all(9.0),
                         child: Column(
                           children: <Widget>[
+                            // Type
                             Row(
                               children: <Widget>[
-                                const Expanded(
+                                Expanded(
                                   flex: 3,
-                                  child: Text('Tipo : '),
+                                  child: Text(
+                                      'Tipo :',
+                                      style: Theme.of(context).textTheme.titleSmall,
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 7,
-                                  child: /* Text('Dropdown button'), */
-                                      DropdownButton(
-                                    isExpanded: true,
-                                    value: _selectedReportType,
-                                    onChanged: (String? value) {
-                                      _onChangeReportType(value);
-                                    },
-                                    items: _reportTypeList
+                                  child:
+                                    DropdownButton(
+                                      isExpanded: true,
+                                      value: _selectedReportType,
+                                      onChanged: (String? value) {
+                                        _onChangeReportType(value);
+                                      },
+                                      items: _reportTypeList
                                         .map<DropdownMenuItem<String>>(
-                                            (String value) {
-                                      return DropdownMenuItem(
-                                        value: value,
-                                        child: Text(value),
-                                      );
-                                    }).toList(),
-                                  ),
+                                          (String value) {
+                                            return DropdownMenuItem(
+                                              value: value,
+                                              child: Text(
+                                                  value,
+                                                  style: Theme.of(context).textTheme.labelLarge,
+                                              ),
+                                            );
+                                          }
+                                        ).toList(),
+                                    ),
                                 ),
                               ],
                             ),
+                            // Status
                             Row(
                               children: <Widget>[
-                                const Expanded(
+                                Expanded(
                                   flex: 3,
-                                  child: Text('Estado : '),
+                                  child: Text(
+                                      'Estado : ',
+                                      style: Theme.of(context).textTheme.titleSmall,
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 7,
@@ -483,7 +498,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                             (String value) {
                                       return DropdownMenuItem(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                            value,
+                                            style: Theme.of(context).textTheme.labelLarge,
+                                        ),
                                       );
                                     }).toList(),
                                   ),
@@ -568,7 +586,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ),
-                    // Selected autorithy response card
+                    // Selected authority response card
                     Visibility(
                       visible: _visibilityReportCard,
                       child: Card(
