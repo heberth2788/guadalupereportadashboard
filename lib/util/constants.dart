@@ -22,24 +22,17 @@ const LatLng latLonGuadalupe = LatLng(-7.243271, -79.470281); // Guadalupe city'
 /// Parse a timestamp to a human readable string format. 
 /// E.g: 21/04/2014 06:16 pm
 String getDatetimeFromTimestamp(int? timestamp) {
-  if (timestamp == null) return '-';
+  if (timestamp == null) return '';
 
   var date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  return DateFormat('dd/MM/yyy hh:mm a').format(date);
+  return DateFormat('dd/MM/yyyy hh:mm a').format(date);
 }
 
-/// Parse the int status value to its string value
-String getStringStatus(int? intStatus) {
-  if (intStatus == 0) {
-    return '[ REPORTADO ]';
-  } else if (intStatus == 1) {
-    return '[ EN PROGRESO ]';
-  } else if (intStatus == 2) {
-    return '[ ATENDIDO ]';
-  } else if (intStatus == 3) {
-    return '[ ANULADO ]';
-  }
-  return '-';
+String getDateFromTimestamp(int? timestamp) {
+  if (timestamp == null) return '';
+
+  var date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  return DateFormat('ddMMyyyy').format(date);
 }
 
 /// Logs messages for debugging and informational purposes.
@@ -47,5 +40,26 @@ String getStringStatus(int? intStatus) {
 void logMsg(String tag, { String msg = '' }) {
   if (kDebugMode) {
     debugPrint('[ $tag: $msg ]');
+  }
+}
+
+enum ReportStatus {
+  created(0, "REPORTADO"),
+  inProgress(1, "EN PROGRESO"),
+  done(2, "ATENDIDO"),
+  canceled(666, "ANULADO");
+
+  final int code;
+  final String description;
+
+  const ReportStatus(this.code, this.description);
+
+  static ReportStatus findByCode(int? code) {
+    for (var status in ReportStatus.values) {
+      if (status.code == code) {
+        return status;
+      }
+    }
+    return ReportStatus.canceled;
   }
 }

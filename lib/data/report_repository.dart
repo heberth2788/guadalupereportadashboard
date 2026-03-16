@@ -16,7 +16,7 @@ class ReportRepository {
   } */
 
   /// Declare private varible with '_'
-  final Map<String, Report> _reportMap = <String, Report>{};
+  final Map<String, Report> _reportMap = { };
   /// Declare get method for the private variable
   Map<String, Report> get reportMap => _reportMap;
 
@@ -46,10 +46,8 @@ class ReportRepository {
   /// Called every time  data is changed
   /// TODO : change to an asynchronous method
   void fetchAllReports(Function() notifyCallback) {
-
     logMsg('ReportRepository', msg: 'fetchAllReports');
-
-    DatabaseReference dfReports = _fbDatabase.ref('/reports');
+    final DatabaseReference dfReports = _fbDatabase.ref('/reports');
 
     // Called every time data is changed at the specific database reference
     dfReports.onValue.listen((DatabaseEvent event) {
@@ -99,6 +97,35 @@ class ReportRepository {
     }, onError: (dynamic error) {
       logMsg('ReportRepository', msg: error.toString());
     });
+  }
+
+  /// Update the status of the report.
+  /// Possible status codes: Reported = 0, InProgress = 1, Done = 2, canceled = 666
+  Future<void> updateReportStatus(String userId, String reportId, String date, ReportStatus status) async {
+    logMsg('ReportRepository', msg: 'updateReportStatus');
+
+    final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+    final Map<String, int> updates = { };
+
+    updates['/reports/$reportId/status'] = status.code;
+    updates['/day-users-reports/$date/$userId/$reportId/status'] = status.code;
+    updates['/user-reports/$userId/$reportId/status'] = status.code;
+
+    if (status == ReportStatus.inProgress) {
+      updates['/reports/$reportId/inProgressTimestamp'] = currentTimestamp;
+      updates['/day-users-reports/$date/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
+      updates['/user-reports/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
+    } else if (status == ReportStatus.done) {
+      updates['/reports/$reportId/doneTimestamp'] = currentTimestamp;
+      updates['/day-users-reports/$date/$userId/$reportId/doneTimestamp'] = currentTimestamp;
+      updates['/user-reports/$userId/$reportId/doneTimestamp'] = currentTimestamp;
+    } else if (status == ReportStatus.canceled) {
+      updates['/reports/$reportId/canceledTimestamp'] = currentTimestamp;
+      updates['/day-users-reports/$date/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
+      updates['/user-reports/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
+    }
+
+    return _fbDatabase.ref().update(updates);
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////

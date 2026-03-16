@@ -113,4 +113,17 @@ class ReportViewModel extends ChangeNotifier {
     });
     notifyListeners();
   }
+
+  void updateReportStatus(String userId, String reportId, String date, ReportStatus status) {
+    logMsg('ReportViewModel', msg: 'updateReportStatus $status');
+
+    _reportRepository.updateReportStatus(userId, reportId, date, status)
+        .then((void _) {
+          logMsg('ReportViewModel', msg: 'updateReportStatus > complete');
+        })
+        .onError((error, stackTrace) {
+          logMsg('ReportViewModel', msg: 'updateReportStatus > error : $error');
+        });
+    notifyListeners();
+  }
 }

@@ -100,7 +100,7 @@ class _DashboardPageState extends State<DashboardPage> {
     if (dateTimePicket != null && dateTimePicket != _selectedDateTo) {
       setState(() {
         _selectedDateTo = dateTimePicket;
-        print('_DashboardPageState > _onPressedDatePickerTo : $_selectedDateTo');
+        logMsg('dashboard_screen', msg: '_DashboardPageState > _onPressedDatePickerTo : $_selectedDateTo');
       });
     }
   }
@@ -148,12 +148,11 @@ class _DashboardPageState extends State<DashboardPage> {
   BitmapDescriptor _markerIcon = BitmapDescriptor.defaultMarker;
   // Iterating the list of reports to create the markers of the map
   void _updateMarkers(ReportViewModel reportViewModel) {
-    print('_DashboardPageState > _updateMarkers');
+    logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
     Map<String, Report> reportsMap = reportViewModel.reportMap;
     if (reportsMap.isNotEmpty) {
       Marker markerPivot;
       //markers = {};
-      //print('Reports quantity : ${ reportsMap.length }');
       for (var report in reportsMap.entries) {
         markerPivot = Marker(
           markerId: MarkerId(report.key),
@@ -166,14 +165,14 @@ class _DashboardPageState extends State<DashboardPage> {
             title:
                 '${report.value.title ?? ''} \n ${getDatetimeFromTimestamp(report.value.creationTimestamp)}',
             snippet:
-                '[ ${report.value.userName ?? ''} | Accuracy : ${report.value.acc?.round() ?? 0}m ]',
+                '[ ${report.value.userName ?? ''} | Precisión : ${report.value.acc?.round() ?? 0}m ]',
             //anchor: const Offset(5.0, 5.0),
             onTap: () {
-              print('InfoWindow - onTab : ${report.key}');
+              logMsg('dashboard_screen', msg: 'InfoWindow - onTab : ${report.key}');
             },
           ),
           onTap: () {
-            print('Marker - onTab : ${report.key}');
+            logMsg('dashboard_screen', msg: 'Marker - onTab : ${report.key}');
 
             // Get the photos of the selected report
             reportViewModel.getPhotos(report.value.userId ?? '', report.key);
@@ -208,7 +207,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Load a custom pin as a marker icon
   void _loadCustomMarker() {
-    print('_DashboardPageState > _loadCustomMarker');
+    logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker');
     BitmapDescriptor.fromAssetImage(
       const ImageConfiguration(size: markerSize),
       'images/pins/pin_red.png',
@@ -220,7 +219,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// Generate the widget of the photos of the selected report
-  List<Widget> _generatePhotoWidgets(List<String> photosUrlList, { bool isRemoveAvailable = false }) {
+  List<Widget> _generatePhotoWidgets(
+      List<String> photosUrlList,
+      { bool isRemoveAvailable = false }
+  ) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _generatePhotoWidgets');
     List<Widget> listOfWidgets = [];
     int flexValue = photosUrlList.length;
@@ -287,15 +289,55 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _inappropriateButtonPressed() {
-    print('inappropriateButtonPressed');
+    logMsg('dashboard_screen', msg: 'inappropriateButtonPressed');
   }
 
-  void _workOrderButtonPressed() {
-    logMsg('dashboard_screen', msg: '_workOrderButtonPressed');
+  /// Canceled = 666
+  void _cancelButtonPressed(ReportViewModel viewModel) {
+    logMsg('dashboard_screen', msg: '_cancelButtonPressed ${ _selectedReport?.id }');
+    if (_selectedReport?.status == ReportStatus.canceled.code || !_isSelectedReportOk()) {
+      return;
+    }
+
+    final String userId = _selectedReport!.userId!;
+    final String reportId = _selectedReport!.id;
+    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp!);
+
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.canceled);
   }
 
-  void _inProgressButtonPressed() {
-    print('inProgressButtonPressed');
+  /// InProgress = 1
+  void _inProgressButtonPressed(ReportViewModel viewModel) {
+    logMsg('dashboard_screen', msg: '_inProgressButtonPressed ${ _selectedReport?.id }');
+    if (_selectedReport?.status == ReportStatus.inProgress.code || !_isSelectedReportOk()) {
+      return;
+    }
+
+    final String userId = _selectedReport!.userId!;
+    final String reportId = _selectedReport!.id;
+    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp!);
+
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.inProgress);
+  }
+
+  /// Done = 2
+  void _doneButtonPressed(ReportViewModel viewModel) {
+    logMsg('dashboard_screen', msg: '_doneButtonPressed ${ _selectedReport?.id }');
+    if (_selectedReport?.status == ReportStatus.done.code || !_isSelectedReportOk()) {
+      return;
+    }
+
+    final String userId = _selectedReport!.userId!;
+    final String reportId = _selectedReport!.id;
+    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp!);
+
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.done);
+  }
+
+  bool _isSelectedReportOk() {
+    return _selectedReport != null
+        && _selectedReport?.userId != null
+        && _selectedReport?.creationTimestamp != null;
   }
   
   Future<void> _uploadResponseImage(ReportViewModel viewModel) async{
@@ -360,7 +402,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         body: Row(
           children: <Widget>[
-            // Google map Widget
+            // Left panel: Google map Widget
             Expanded(
               flex: 7,
               child: GoogleMap(
@@ -372,7 +414,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 markers: _markers,
               ),
             ),
-            // Right panel : filters, reports generation, information
+            // Right panel : filters, information
             Expanded(
               flex: 3,
               child: Padding(
@@ -543,8 +585,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                   Expanded(
                                     flex: 3,
                                     child: Text(
+                                      ReportStatus.findByCode(_selectedReport?.status).description,
                                       style: reportStatusTextStyle,
-                                      getStringStatus(_selectedReport?.status),
                                       textAlign: TextAlign.end,
                                     ),
                                   ),
@@ -606,7 +648,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                                   ElevatedButton(
                                     style: buttonStyle,
-                                    onPressed: _workOrderButtonPressed,
+                                    onPressed: () => _cancelButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
                                     child: const Text('Anular'),
                                   ),
                                 ],
@@ -647,13 +689,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                 children: [
                                   ElevatedButton(
                                     style: buttonStyle,
-                                    onPressed: _inProgressButtonPressed,
+                                    onPressed: () => _inProgressButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
                                     child: const Text('En progreso'),
                                   ),
                                   const Padding(padding: EdgeInsets.only(right: 9.0)),
                                   ElevatedButton(
                                     style: buttonStyle,
-                                    onPressed: _workOrderButtonPressed,
+                                    onPressed: () => _doneButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
                                     child: const Text('Atendido'),
                                   ),
                                   const Spacer(),
