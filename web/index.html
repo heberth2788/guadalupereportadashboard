@@ -32,41 +32,18 @@
   <title>Dashboard</title>
   <link rel="manifest" href="manifest.json">
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = null;
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
-
-  <!-- Add support for google maps for JS -->
+  <!-- Add support for Google Maps for JS -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCauD1RNqdNYpmyRAnwNEiGp7ogpOlFZOA"></script>
+
 </head>
 <body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      // Setup Html renderer or CanvasKit renderer
-      // [START setup_html_renderer]
-      let useHtmlRenderer = true;
-      // [STOP setup_html_renderer]
 
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          // [START setup_html_renderer]
-          let config = {
-            renderer: useHtmlRenderer ? "html" : "canvaskit",
-          };
-          engineInitializer.initializeEngine(config).then(function(appRunner) {
-            appRunner.runApp();
-          });
-          // [END setup_html_renderer]
-        }
-      });
-    });
-  </script>
+  <!--
+    JavaScript code needed to initialize and run your Flutter app.
+      Location: build/web/
+      Generated when run: flutter build web --wasm
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+
 </body>
 </html>

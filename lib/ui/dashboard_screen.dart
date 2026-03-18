@@ -1,13 +1,15 @@
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/ui/report_view_model.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
 import 'package:intl/intl.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -163,9 +165,11 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: _markerIcon, //BitmapDescriptor.defaultMarker,
           infoWindow: InfoWindow(
             title:
-                '${report.value.title ?? ''} \n ${getDatetimeFromTimestamp(report.value.creationTimestamp)}',
+                '${ report.value.title ?? '' } '
+                    '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
+                    '\n ${ ReportStatus.findByCode(report.value.status).description } ',
             snippet:
-                '[ ${report.value.userName ?? ''} | Precisión : ${report.value.acc?.round() ?? 0}m ]',
+                '[ ${ report.value.userName ?? '' } | Precisión : ${ report.value.acc?.round() ?? 0 }m ]',
             //anchor: const Offset(5.0, 5.0),
             onTap: () {
               logMsg('dashboard_screen', msg: 'InfoWindow - onTab : ${report.key}');
@@ -208,7 +212,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Load a custom pin as a marker icon
   void _loadCustomMarker() {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker');
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
       const ImageConfiguration(size: markerSize),
       'images/pins/pin_red.png',
     ).then((BitmapDescriptor icon) {
@@ -405,13 +409,22 @@ class _DashboardPageState extends State<DashboardPage> {
             // Left panel: Google map Widget
             Expanded(
               flex: 7,
-              child: GoogleMap(
-                //mapType: MapType.normal,
-                myLocationEnabled: true,
-                initialCameraPosition: const CameraPosition(
-                    target: latLonGuadalupe, zoom: zoomMapValue),
-                onMapCreated: _onMapCreated,
-                markers: _markers,
+              child: PointerInterceptor(
+                child: GoogleMap(
+                  //mapType: MapType.normal,
+                  myLocationEnabled: true,
+                  onMapCreated: _onMapCreated,
+                  markers: _markers,
+                  initialCameraPosition: const CameraPosition(
+                    target: latLonGuadalupe,
+                    zoom: zoomMapValue,
+                  ),
+                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                    Factory<OneSequenceGestureRecognizer>(
+                        () => EagerGestureRecognizer(),
+                    ),
+                  },
+                ),
               ),
             ),
             // Right panel : filters, information
