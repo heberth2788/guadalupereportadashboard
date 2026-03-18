@@ -421,7 +421,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                     Factory<OneSequenceGestureRecognizer>(
-                        () => EagerGestureRecognizer(),
+                      () => EagerGestureRecognizer(),
                     ),
                   },
                 ),
