@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.6
 
   # Support for google maps web
-  google_maps_flutter_web: ^0.5.4+3
+  google_maps_flutter_web: ^0.6.1
 
   # Support for google maps
   google_maps_flutter: ^2.5.3
@@ -48,21 +48,23 @@ dependencies:
   provider: ^6.1.1
 
   # Support for Firebase core
-  firebase_core: ^2.24.2
+  firebase_core: ^4.5.0
   # Support for Firebase RTDB
-  firebase_database: ^10.4.0
+  firebase_database: ^12.1.4
   # Support for Firebase Auth
-  firebase_auth: ^4.16.0
+  firebase_auth: ^6.2.0
   # Support for Firebase UI Auth
-  firebase_ui_auth: ^1.13.0
+  firebase_ui_auth: ^3.0.1
   # Support for Firebase Storage
-  firebase_storage: ^11.7.3
+  firebase_storage: ^13.1.0
   # Support for a simple transparent image for loading images
   transparent_image: ^2.0.1
   # Support for url links
   url_launcher: ^6.2.6
   # Support for pick files from local storage
-  file_picker: ^5.5.0
+  file_picker: ^10.3.10
+  # Support for PointerInterceptor widget used to wrap the Google Map widget to avoid "Exception caught by gestures library"
+  pointer_interceptor: ^0.10.1+2
 
 dev_dependencies:
   flutter_test:
@@ -73,7 +75,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

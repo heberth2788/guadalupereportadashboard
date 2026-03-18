@@ -1,6 +1,6 @@
 import 'dart:collection'; // To use UnmodifiableListView class
 import 'package:flutter/foundation.dart'; // To use ChangeNotifier class
-import 'package:guadalupereportadashboard/learnandtest/provider/Item.dart';
+import 'package:guadalupereportadashboard/learnandtest/provider/item.dart';
 
 const cartItemCost = 50;
 
