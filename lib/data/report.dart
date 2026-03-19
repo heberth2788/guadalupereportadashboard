@@ -1,8 +1,6 @@
 
 class Report {
-  
   String id;
-
   double? acc;
   double? alt;
   int? creationTimestamp;
@@ -21,7 +19,9 @@ class Report {
 
   @override
   String toString() {
-    final str = '$id | $acc | $alt | $creationTimestamp | $description | $doneTimestamp | $inProgressTimestamp | $lat | $lon | $status | $title | $userId | $userName | $visible';
+    final String str = '$id | $acc | $alt | $creationTimestamp | $description | '
+        '$doneTimestamp | $inProgressTimestamp | $lat | $lon | $status | '
+        '$title | $userId | $userName | $visible';
     return str;
   }
 }

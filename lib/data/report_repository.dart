@@ -60,20 +60,20 @@ class ReportRepository {
       // Iterating the list of reports
       for (final DataSnapshot reportChild in event.snapshot.children) {
         //final report = reportChild.value;
-        final key = reportChild.key?.toString() ?? '';
-        final acc = double.parse(reportChild.child('acc').value?.toString() ?? '0.0');
-        final alt = double.parse(reportChild.child('alt').value?.toString() ?? '0.0');
-        final creationTimestamp = int.parse(reportChild.child('creationTimestamp').value?.toString() ?? '0');
-        final description = reportChild.child('description').value?.toString() ?? '';
-        final doneTimestamp = int.parse(reportChild.child('doneTimestamp').value?.toString() ?? '0');
-        final inProgressTimestamp = int.parse(reportChild.child('inProgressTimestamp').value?.toString() ?? '0');
-        final lat = double.parse(reportChild.child('lat').value?.toString() ?? '0.0');
-        final lon = double.parse(reportChild.child('lon').value?.toString() ?? '0.0');
-        final status = int.parse(reportChild.child('status').value?.toString() ?? '0');
-        final title = reportChild.child('title').value?.toString() ?? '';
-        final userId = reportChild.child('userId').value?.toString() ?? '';
-        final userName = reportChild.child('userName').value?.toString() ?? '';
-        final visible = bool.parse(reportChild.child('visible').value?.toString() ?? 'true');
+        final String key = reportChild.key?.toString() ?? '';
+        final double acc = double.parse(reportChild.child('acc').value?.toString() ?? '0.0');
+        final double alt = double.parse(reportChild.child('alt').value?.toString() ?? '0.0');
+        final int creationTimestamp = int.parse(reportChild.child('creationTimestamp').value?.toString() ?? '0');
+        final String description = reportChild.child('description').value?.toString() ?? '';
+        final int doneTimestamp = int.parse(reportChild.child('doneTimestamp').value?.toString() ?? '0');
+        final int inProgressTimestamp = int.parse(reportChild.child('inProgressTimestamp').value?.toString() ?? '0');
+        final double lat = double.parse(reportChild.child('lat').value?.toString() ?? '0.0');
+        final double lon = double.parse(reportChild.child('lon').value?.toString() ?? '0.0');
+        final int status = int.parse(reportChild.child('status').value?.toString() ?? '0');
+        final String title = reportChild.child('title').value?.toString() ?? '';
+        final String userId = reportChild.child('userId').value?.toString() ?? '';
+        final String userName = reportChild.child('userName').value?.toString() ?? '';
+        final bool visible = bool.parse(reportChild.child('visible').value?.toString() ?? 'true');
 
         final report = Report(key);
         report.acc = acc;
