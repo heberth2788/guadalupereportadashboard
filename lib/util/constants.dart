@@ -35,11 +35,16 @@ String getDateFromTimestamp(int? timestamp) {
   return DateFormat('ddMMyyyy').format(date);
 }
 
+String _getCurrentTime() {
+  var now = DateTime.now();
+  return DateFormat('hh:mm:ss').format(now);
+}
+
 /// Logs messages for debugging and informational purposes.
 /// [tag] is a label for the log source, [msg] is the message to log.
 void logMsg(String tag, { String msg = '' }) {
   if (kDebugMode) {
-    debugPrint('[ $tag: $msg ]');
+    debugPrint('[ ${ _getCurrentTime() } $tag: $msg ]');
   }
 }
 
