@@ -6,8 +6,11 @@ import 'package:guadalupereportadashboard/data/report_repository.dart';
 
 /// Provider implementation : ChangeNotifier(Observable)
 class ReportViewModel extends ChangeNotifier {
-  
-  final ReportRepository _reportRepository = ReportRepository();
+
+  final ReportRepository _reportRepository;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   Map<String, Report> _reportMap = <String, Report> {};
   UnmodifiableMapView<String, Report> get reportMap => UnmodifiableMapView(_reportMap);
@@ -23,7 +26,9 @@ class ReportViewModel extends ChangeNotifier {
   bool _isImageUploadProcessFinished = true;
   bool get isImageUploadProcessFinished => _isImageUploadProcessFinished;
 
-  ReportViewModel() : super() {
+  ReportViewModel({
+    ReportRepository? repository,
+  }): _reportRepository = repository ?? ReportRepository() {
     _reportRepository.fetchAllReports(_reportNotification);
   }
 
@@ -37,7 +42,7 @@ class ReportViewModel extends ChangeNotifier {
     _reportRepository.fetchReportByDateRange('', '', _reportNotification);
   }
 
-  void getPhotos(String userId, String reportId) {
+  /*void getPhotos(String userId, String reportId) {
     logMsg('ReportViewModel', msg: 'getPhotos');
 
     _reportRepository.fetchReportImagesFromUserAndReport(userId, reportId)
@@ -63,6 +68,28 @@ class ReportViewModel extends ChangeNotifier {
         //print('getPhotos : error : ${ stackTrace.toString() }');
         notifyListeners();
       });
+  }*/
+
+  Future<void> getPhotos(String userId, String reportId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Run both requests in parallel
+      final results = await Future.wait([
+        _reportRepository.fetchReportImages(userId, reportId),
+        _reportRepository.fetchResponseImages(userId, reportId),
+      ]);
+      _currentReportPhotos = results[0];
+      _currentResponsePhotos = results[1];
+    } catch (e) {
+      logMsg('ReportViewModel', msg: 'Error fetching photos: $e');
+      _currentReportPhotos = [];
+      _currentResponsePhotos = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void uploadResponseImage(

@@ -146,6 +146,12 @@ class _DashboardPageState extends State<DashboardPage> {
   void _updateMarkers(ReportViewModel reportViewModel) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
     Map<String, Report> reportsMap = reportViewModel.reportMap;
+
+    /*if (_selectedReport != null && reportsMap.containsKey(_selectedReport?.id)) {
+      String id = _selectedReport?.id ?? '';
+      _selectedReport = reportsMap[id];
+    }*/
+
     if (reportsMap.isNotEmpty) {
       Marker markerPivot;
       //markers = {};
@@ -168,7 +174,8 @@ class _DashboardPageState extends State<DashboardPage> {
             },
           ),
           onTap: () {
-            logMsg('dashboard_screen', msg: 'Marker - onTab : ${ report.key }');
+            logMsg('dashboard_screen', msg: 'Marker - onTab : ${ report.key } '
+                ', ${ ReportStatus.findByCode(report.value.status).description }');
 
             // Get the photos of the selected report
             reportViewModel.getPhotos(report.value.userId ?? '', report.key);
@@ -401,7 +408,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(13.0),
                   child: Column(
-                    children: <Widget>[
+                    children: [
                       // Filters : Date From, Date To
                       Card(
                         child: Padding(
@@ -535,7 +542,6 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                       ),
-                      const Padding(padding: EdgeInsets.only(top: 9.0)),
                       // Selected user report card
                       Visibility(
                         visible: _showReportCards,
@@ -544,7 +550,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             padding: const EdgeInsets.all(9.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget> [
+                              children: [
                                 // Title of the report
                                 Text(
                                   style: reportTitleTextStyle,
@@ -554,12 +560,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const Padding(padding: EdgeInsets.only(top: 9.0)),
                                 // User name and Status of the report
                                 Row(
-                                  children: <Widget>[
+                                  children: [
                                     Expanded(
                                       flex: 7,
                                       child: Text(
-                                        style: reportUserAndDateTextStyle,
                                         _selectedReport?.userName ?? '-',
+                                        style: reportUserAndDateTextStyle,
                                         textAlign: TextAlign.start,
                                       ),
                                     ),

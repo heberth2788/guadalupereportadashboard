@@ -45,7 +45,7 @@ class ReportRepository {
   /// Fetch all the reports from firebase database
   /// Called every time  data is changed
   /// TODO : change to an asynchronous method
-  void fetchAllReports(Function() notifyCallback) {
+  /*void fetchAllReports(Function() notifyCallback) {
     logMsg('ReportRepository', msg: 'fetchAllReports');
     final DatabaseReference dfReports = _fbDatabase.ref('/reports');
 
@@ -96,6 +96,22 @@ class ReportRepository {
       notifyCallback();
     }, onError: (dynamic error) {
       logMsg('ReportRepository', msg: error.toString());
+    });
+  }*/
+
+  void fetchAllReports(Function() notifyCallback) {
+    logMsg('ReportRepository', msg: 'fetchAllReports');
+    _fbDatabase.ref('/reports').onValue.listen((DatabaseEvent event) {
+      logMsg('ReportRepository', msg: 'fetchAllReports > onValue');
+      if (!event.snapshot.exists) return;
+
+      logMsg('ReportRepository', msg: 'fetchAllReports > onValue > event.snapshot.value');
+      final data = event.snapshot.value as Map<dynamic, dynamic>;
+      _reportMap.clear();
+      data.forEach((key, value) {
+        _reportMap[key] = Report.fromMap(key, value as Map<dynamic, dynamic>);
+      });
+      notifyCallback();
     });
   }
 
@@ -214,4 +230,20 @@ class ReportRepository {
       'visible': 1,
     });
   }
+
+  // Generic helper for fetching images
+  Future<List<String>> _fetchImages(String path) async {
+    final ListResult result = await _fbStorage.ref(path).listAll();
+    return Future.wait(result.items.map((ref) => ref.getDownloadURL()));
+  }
+
+  Future<List<String>> fetchReportImages(
+      String userId,
+      String reportId,
+  ) => _fetchImages('/user-reports-photos/$userId/$reportId');
+
+  Future<List<String>> fetchResponseImages(
+      String userId,
+      String reportId,
+  ) => _fetchImages('/response-photos/$userId/$reportId');
 }
