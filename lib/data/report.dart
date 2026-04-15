@@ -1,27 +1,52 @@
-
 class Report {
-  String id;
-  double? acc;
-  double? alt;
-  int? creationTimestamp;
-  String? description;
-  int? doneTimestamp;
-  int? inProgressTimestamp;
-  double? lat;
-  double? lon;
-  int? status;
-  String? title;
-  String? userId;
-  String? userName;
-  bool? visible;
+  final String id;
+  double acc;
+  double alt;
+  int creationTimestamp;
+  String description;
+  int doneTimestamp;
+  int inProgressTimestamp;
+  double lat;
+  double lon;
+  int status;
+  String title;
+  String userId;
+  String userName;
+  bool visible;
 
-  Report(this.id); 
+  Report({
+    required this.id,
+    this.acc = 0.0,
+    this.alt = 0.0,
+    this.creationTimestamp = 0,
+    this.description = '',
+    this.doneTimestamp = 0,
+    this.inProgressTimestamp = 0,
+    this.lat = 0.0,
+    this.lon = 0.0,
+    this.status = 0,
+    this.title = '',
+    this.userId = '',
+    this.userName = '',
+    this.visible = true,
+  });
 
-  @override
-  String toString() {
-    final String str = '$id | $acc | $alt | $creationTimestamp | $description | '
-        '$doneTimestamp | $inProgressTimestamp | $lat | $lon | $status | '
-        '$title | $userId | $userName | $visible';
-    return str;
+  factory Report.fromMap(String id, Map<dynamic, dynamic> map) {
+    return Report(
+      id: id,
+      acc: (map['acc'] as num?)?.toDouble() ?? 0.0,
+      alt: (map['alt'] as num?)?.toDouble() ?? 0.0,
+      creationTimestamp: map['creationTimestamp'] as int? ?? 0,
+      description: map['description']?.toString() ?? '',
+      doneTimestamp: map['doneTimestamp'] as int? ?? 0,
+      inProgressTimestamp: map['inProgressTimestamp'] as int? ?? 0,
+      lat: (map['lat'] as num?)?.toDouble() ?? 0.0,
+      lon: (map['lon'] as num?)?.toDouble() ?? 0.0,
+      status: map['status'] as int? ?? 0,
+      title: map['title']?.toString() ?? '',
+      userId: map['userId']?.toString() ?? '',
+      userName: map['userName']?.toString() ?? '',
+      visible: map['visible'] as bool? ?? true,
+    );
   }
 }

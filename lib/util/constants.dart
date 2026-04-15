@@ -10,6 +10,7 @@ const int rangeDays = 63; //21;
 const Color seedColor = Color.fromRGBO(60, 105, 27, 0); // Const for material theme
 const Size markerSize = Size(40, 40); // Size of the pin on the map
 const int maxAllowedResponsePhotos = 3; // Maximum number of response photos allowed
+const String redPinAssetPath = 'images/pins/pin_red.png';
 
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 13));
 const TextStyle reportTitleTextStyle = TextStyle(fontSize: 17, fontWeight: FontWeight.bold);

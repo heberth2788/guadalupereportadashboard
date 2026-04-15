@@ -45,7 +45,7 @@ class ReportRepository {
   /// Fetch all the reports from firebase database
   /// Called every time  data is changed
   /// TODO : change to an asynchronous method
-  void fetchAllReports(Function() notifyCallback) {
+  /*void fetchAllReports(Function() notifyCallback) {
     logMsg('ReportRepository', msg: 'fetchAllReports');
     final DatabaseReference dfReports = _fbDatabase.ref('/reports');
 
@@ -97,6 +97,22 @@ class ReportRepository {
     }, onError: (dynamic error) {
       logMsg('ReportRepository', msg: error.toString());
     });
+  }*/
+
+  void fetchAllReports(Function() notifyCallback) {
+    logMsg('report_repository', msg: 'fetchAllReports');
+    _fbDatabase.ref('/reports').onValue.listen((DatabaseEvent event) {
+      logMsg('report_repository', msg: 'fetchAllReports > onValue');
+      if (!event.snapshot.exists) return;
+
+      logMsg('report_repository', msg: 'fetchAllReports > onValue > event.snapshot.value');
+      final data = event.snapshot.value as Map<dynamic, dynamic>;
+      _reportMap.clear();
+      data.forEach((key, value) {
+        _reportMap[key] = Report.fromMap(key, value as Map<dynamic, dynamic>);
+      });
+      notifyCallback();
+    });
   }
 
   /// Update the status of the report.
@@ -132,7 +148,7 @@ class ReportRepository {
   /// Methods for Firebase Storage
   ///////////////////////////////////////////////////////////////////////////////////////
   
-  /// Fetch the images from the reporte of a specific used and report
+  /// Fetch the images from the report of a specific used and report
   Future<List<String>> fetchReportImagesFromUserAndReport(String userId, String reportId) async {
 
     logMsg('ReportRepository', msg: 'fetchReportImagesFromUserAndReport'); 
@@ -172,7 +188,7 @@ class ReportRepository {
     return photosUrlList;
   }
 
-  /// Upload an image file to firebase storage for a specidic user and report
+  /// Upload an image file to firebase storage for a specific user and report
   Future<String> uploadResponseImage(
     Uint8List imageBytes, 
     String imageName, 
@@ -214,4 +230,20 @@ class ReportRepository {
       'visible': 1,
     });
   }
+
+  // Generic helper for fetching images
+  Future<List<String>> _fetchImages(String path) async {
+    final ListResult result = await _fbStorage.ref(path).listAll();
+    return Future.wait(result.items.map((ref) => ref.getDownloadURL()));
+  }
+
+  Future<List<String>> fetchReportImages(
+      String userId,
+      String reportId,
+  ) => _fetchImages('/user-reports-photos/$userId/$reportId');
+
+  Future<List<String>> fetchResponseImages(
+      String userId,
+      String reportId,
+  ) => _fetchImages('/response-photos/$userId/$reportId');
 }

@@ -146,6 +146,15 @@ class _DashboardPageState extends State<DashboardPage> {
   void _updateMarkers(ReportViewModel reportViewModel) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
     Map<String, Report> reportsMap = reportViewModel.reportMap;
+
+    /*if (_selectedReport != null && reportsMap.containsKey(_selectedReport?.id)) {
+      String id = _selectedReport?.id ?? '';
+      _selectedReport = reportsMap[id];
+    }*/
+
+    // Clear existing markers to handle deletions and avoid duplicates
+    _markers.clear();
+
     if (reportsMap.isNotEmpty) {
       Marker markerPivot;
       //markers = {};
@@ -153,25 +162,26 @@ class _DashboardPageState extends State<DashboardPage> {
         markerPivot = Marker(
           markerId: MarkerId(report.key),
           position: LatLng(
-            report.value.lat ?? 0.0,
-            report.value.lon ?? 0.0,
+            report.value.lat,
+            report.value.lon,
           ),
           icon: _markerIcon, //BitmapDescriptor.defaultMarker,
           infoWindow: InfoWindow(
-            title: '${ report.value.title ?? '' } '
+            title: '${ report.value.title} '
                     '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
                     '\n ${ ReportStatus.findByCode(report.value.status).description } ',
-            snippet: '[ ${ report.value.userName ?? '' } | Precisión : ${ report.value.acc?.round() ?? 0 }m ]',
+            snippet: '[ ${ report.value.userName} | Precisión : ${ report.value.acc.round()}m ]',
             //anchor: const Offset(5.0, 5.0),
             onTap: () {
               logMsg('dashboard_screen', msg: 'InfoWindow - onTab : ${ report.key }');
             },
           ),
           onTap: () {
-            logMsg('dashboard_screen', msg: 'Marker - onTab : ${ report.key }');
+            logMsg('dashboard_screen', msg: 'Marker - onTab : ${ report.key } '
+                ', ${ ReportStatus.findByCode(report.value.status).description }');
 
             // Get the photos of the selected report
-            reportViewModel.getPhotos(report.value.userId ?? '', report.key);
+            reportViewModel.getPhotos(report.value.userId, report.key);
 
             logMsg('dashboard_screen', msg: report.value.toString());
 
@@ -187,16 +197,19 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// Load a custom pin as a marker icon
-  void _loadCustomMarker() {
+  Future<void> _loadCustomMarker() async {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker');
-    BitmapDescriptor.asset(
-      const ImageConfiguration(size: markerSize),
-      'images/pins/pin_red.png',
-    ).then((BitmapDescriptor icon) {
-      setState(() {
-        _markerIcon = icon;
-      });
-    });
+    try {
+      final ImageConfiguration imgConfig = createLocalImageConfiguration(context, size: markerSize);
+      final BitmapDescriptor icon = await BitmapDescriptor.asset(imgConfig, redPinAssetPath);
+      if (mounted) {
+        setState(() {
+          _markerIcon = icon;
+        });
+      }
+    } catch(e) { // TODO: this catch body is always executed, why?
+      logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker > error : $e');
+    }
   }
 
   /// Generate the widget of the photos of the selected report
@@ -267,11 +280,11 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     logMsg('dashboard_screen', msg: 'B');
 
-    final String userId = _selectedReport!.userId!;
+    final String userId = _selectedReport!.userId;
     final String reportId = _selectedReport!.id;
-    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp!);
+    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp);
 
-    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.canceled);
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.canceled); // fire and forget
   }
 
   /// InProgress = 1
@@ -283,11 +296,11 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     logMsg('dashboard_screen', msg: 'B');
 
-    final String userId = _selectedReport!.userId!;
+    final String userId = _selectedReport!.userId;
     final String reportId = _selectedReport!.id;
-    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp!);
+    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp);
 
-    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.inProgress);
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.inProgress); // fire and forget
   }
 
   /// Done = 2
@@ -299,11 +312,11 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     logMsg('dashboard_screen', msg: 'B');
 
-    final String userId = _selectedReport!.userId!;
+    final String userId = _selectedReport!.userId;
     final String reportId = _selectedReport!.id;
-    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp!);
+    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp);
 
-    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.done);
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.done); // fire and forget
   }
 
   bool _isSelectedReportOk() {
@@ -312,7 +325,7 @@ class _DashboardPageState extends State<DashboardPage> {
         && _selectedReport?.creationTimestamp != null;
   }
   
-  Future<void> _uploadResponseImage(ReportViewModel viewModel) async{
+  Future<void> _uploadResponseImage(ReportViewModel viewModel) async {
     logMsg('_DashboardPageState', msg: '_uploadResponseImage');
 
     // Use image picker to select an image from local storage
@@ -338,7 +351,7 @@ class _DashboardPageState extends State<DashboardPage> {
       logMsg('_DashboardPageState', msg: '_uploadResponseImage > No report selected');
       return;
     }
-    viewModel.uploadResponseImage(fileBytes, fileExtension, _selectedReport!.userId!, _selectedReport!.id);
+    viewModel.uploadResponseImage(fileBytes, fileExtension, _selectedReport!.userId, _selectedReport!.id);
   }
 
   /// Called when this object is inserted into the tree.
@@ -347,7 +360,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _loadCustomMarker();
+    _loadCustomMarker(); // fire and forget
   }
 
   /// Home dashboard widget building
@@ -401,7 +414,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(13.0),
                   child: Column(
-                    children: <Widget>[
+                    children: [
                       // Filters : Date From, Date To
                       Card(
                         child: Padding(
@@ -535,7 +548,6 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                       ),
-                      const Padding(padding: EdgeInsets.only(top: 9.0)),
                       // Selected user report card
                       Visibility(
                         visible: _showReportCards,
@@ -544,7 +556,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             padding: const EdgeInsets.all(9.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget> [
+                              children: [
                                 // Title of the report
                                 Text(
                                   style: reportTitleTextStyle,
@@ -554,12 +566,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const Padding(padding: EdgeInsets.only(top: 9.0)),
                                 // User name and Status of the report
                                 Row(
-                                  children: <Widget>[
+                                  children: [
                                     Expanded(
                                       flex: 7,
                                       child: Text(
-                                        style: reportUserAndDateTextStyle,
                                         _selectedReport?.userName ?? '-',
+                                        style: reportUserAndDateTextStyle,
                                         textAlign: TextAlign.start,
                                       ),
                                     ),
