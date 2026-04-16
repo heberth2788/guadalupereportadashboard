@@ -43,34 +43,6 @@ class ReportViewModel extends ChangeNotifier {
     _reportRepository.fetchReportByDateRange('', '', _reportNotification);
   }
 
-  /*void getPhotos(String userId, String reportId) {
-    logMsg('ReportViewModel', msg: 'getPhotos');
-
-    _reportRepository.fetchReportImagesFromUserAndReport(userId, reportId)
-      .then((List<String> reportList){
-        _currentReportPhotos = reportList;
-        //print('getPhotos : then : ${ _currentReportPhotos.length }');
-         notifyListeners();
-      })
-      .onError((error, stackTrace) {
-        _currentReportPhotos = [];
-        //print('getPhotos : error : ${ stackTrace.toString() }');
-        notifyListeners();
-      });
-
-    _reportRepository.fetchResponseImagesFromUserAndReport(userId, reportId)
-      .then((List<String> responseList){
-        _currentResponsePhotos = responseList;
-        //print('getPhotos : then : ${ _currentResponsePhotos.length }');
-         notifyListeners();
-      })
-      .onError((error, stackTrace) {
-        _currentResponsePhotos = [];
-        //print('getPhotos : error : ${ stackTrace.toString() }');
-        notifyListeners();
-      });
-  }*/
-
   Future<void> getPhotos(String userId, String reportId) async {
     _isLoading = true;
     notifyListeners();
@@ -92,38 +64,6 @@ class ReportViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  /*void uploadResponseImage(
-    Uint8List imageBytes, 
-    String fileExtention, 
-    String userId, 
-    String reportId,
-  ) {
-    logMsg('report_view_model', msg: 'uploadResponsePhoto');
-
-    _isImageUploadProcessFinished = false;
-    notifyListeners();
-
-    final String imageName = '${ DateTime.now().millisecondsSinceEpoch }.$fileExtention';
-    _reportRepository.uploadResponseImage(imageBytes, imageName, userId, reportId)
-      .then((String urlResponsePhoto) {
-        if (urlResponsePhoto.isNotEmpty) {
-          logMsg('report_view_model', msg: 'uploadResponsePhoto > complete');
-          _currentResponsePhotos.add(urlResponsePhoto);
-        } else {
-          logMsg('report_view_model', msg: 'uploadResponsePhoto > failed');
-        }
-
-        _isImageUploadProcessFinished = true;
-        notifyListeners();
-      })
-      .onError((error, stackTrace) {
-        logMsg('report_view_model', msg: 'uploadResponsePhoto > error : $error');
-
-        _isImageUploadProcessFinished = false;
-        notifyListeners();
-      });
-  }*/
 
   Future<void> uploadResponseImage(
       Uint8List imageBytes,

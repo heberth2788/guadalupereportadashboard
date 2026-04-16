@@ -10,11 +10,6 @@ class ReportRepository {
   final FirebaseDatabase _fbDatabase = FirebaseDatabase.instance;
   final FirebaseStorage _fbStorage = FirebaseStorage.instance;
 
-  /* late DatabaseReference _dfReports;
-  ReportRepository() {
-    _dfReports = _fbDatabase.ref('/reports');
-  } */
-
   /// Declare private varible with '_'
   final Map<String, Report> _reportMap = { };
   /// Declare get method for the private variable
@@ -44,61 +39,6 @@ class ReportRepository {
 
   /// Fetch all the reports from firebase database
   /// Called every time  data is changed
-  /// TODO : change to an asynchronous method
-  /*void fetchAllReports(Function() notifyCallback) {
-    logMsg('ReportRepository', msg: 'fetchAllReports');
-    final DatabaseReference dfReports = _fbDatabase.ref('/reports');
-
-    // Called every time data is changed at the specific database reference
-    dfReports.onValue.listen((DatabaseEvent event) {
-      if (!event.snapshot.exists || event.snapshot.value == null) {
-        return;
-      }
-
-      //_reportList = [];
-
-      // Iterating the list of reports
-      for (final DataSnapshot reportChild in event.snapshot.children) {
-        //final report = reportChild.value;
-        final String key = reportChild.key?.toString() ?? '';
-        final double acc = double.parse(reportChild.child('acc').value?.toString() ?? '0.0');
-        final double alt = double.parse(reportChild.child('alt').value?.toString() ?? '0.0');
-        final int creationTimestamp = int.parse(reportChild.child('creationTimestamp').value?.toString() ?? '0');
-        final String description = reportChild.child('description').value?.toString() ?? '';
-        final int doneTimestamp = int.parse(reportChild.child('doneTimestamp').value?.toString() ?? '0');
-        final int inProgressTimestamp = int.parse(reportChild.child('inProgressTimestamp').value?.toString() ?? '0');
-        final double lat = double.parse(reportChild.child('lat').value?.toString() ?? '0.0');
-        final double lon = double.parse(reportChild.child('lon').value?.toString() ?? '0.0');
-        final int status = int.parse(reportChild.child('status').value?.toString() ?? '0');
-        final String title = reportChild.child('title').value?.toString() ?? '';
-        final String userId = reportChild.child('userId').value?.toString() ?? '';
-        final String userName = reportChild.child('userName').value?.toString() ?? '';
-        final bool visible = bool.parse(reportChild.child('visible').value?.toString() ?? 'true');
-
-        final report = Report(key);
-        report.acc = acc;
-        report.alt = alt;
-        report.creationTimestamp = creationTimestamp;
-        report.description = description;
-        report.doneTimestamp = doneTimestamp;
-        report.inProgressTimestamp = inProgressTimestamp;
-        report.lat = lat;
-        report.lon = lon;
-        report.status = status;
-        report.title = title;
-        report.userId = userId;
-        report.userName = userName;
-        report.visible = visible;
-
-        _reportMap[key] = report;
-        logMsg('ReportRepository', msg: report.toString());
-      }
-      notifyCallback();
-    }, onError: (dynamic error) {
-      logMsg('ReportRepository', msg: error.toString());
-    });
-  }*/
-
   void fetchAllReports(Function() notifyCallback) {
     logMsg('report_repository', msg: 'fetchAllReports');
     _fbDatabase.ref('/reports').onValue.listen((DatabaseEvent event) {
