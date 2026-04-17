@@ -23,7 +23,7 @@ class ReportRepository {
   /// Called every time  data is changed
   void fetchReportByDateRange(String dateFrom, String dateTo, Function() notifyCallback) {
     
-    logMsg('ReportRepository', msg: 'fetchReportByDateRange > $dateFrom - $dateTo');
+    logMsg('report_repository', msg: 'fetchReportByDateRange > $dateFrom - $dateTo');
 
       DatabaseReference dfReports = _fbDatabase.ref('/day-users-reports');
       Query query = dfReports.orderByKey().startAt(dateFrom).endAt(dateTo);
@@ -32,7 +32,7 @@ class ReportRepository {
           final key = reportChild.key?.toString() ?? '';
           final userId = reportChild.child('userId').value?.toString() ?? '';
           final userName = reportChild.child('userName').value?.toString() ?? '';
-          logMsg('ReportRepository', msg: '$key - $userName - $userId');
+          logMsg('report_repository', msg: '$key - $userName - $userId');
         }
       });
   }
@@ -58,7 +58,7 @@ class ReportRepository {
   /// Update the status of the report.
   /// Possible status codes: Reported = 0, InProgress = 1, Done = 2, canceled = 666
   Future<void> updateReportStatus(String userId, String reportId, String date, ReportStatus status) async {
-    logMsg('ReportRepository', msg: 'updateReportStatus');
+    logMsg('report_repository', msg: 'updateReportStatus');
 
     final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final Map<String, int> updates = { };
@@ -91,7 +91,7 @@ class ReportRepository {
   /// Fetch the images from the report of a specific used and report
   Future<List<String>> fetchReportImagesFromUserAndReport(String userId, String reportId) async {
 
-    logMsg('ReportRepository', msg: 'fetchReportImagesFromUserAndReport'); 
+    logMsg('report_repository', msg: 'fetchReportImagesFromUserAndReport');
     
     final Reference rPhotos = _fbStorage.ref('/user-reports-photos/$userId/$reportId');
 
@@ -111,7 +111,7 @@ class ReportRepository {
   /// Fetch the images from the response of a specific used and report
   Future<List<String>> fetchResponseImagesFromUserAndReport(String userId, String reportId) async {
 
-    logMsg('ReportRepository', msg: 'fetchResponseImagesFromUserAndReport'); 
+    logMsg('report_repository', msg: 'fetchResponseImagesFromUserAndReport');
     
     final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId');
 
@@ -135,7 +135,7 @@ class ReportRepository {
     String userId, 
     String reportId,
   ) async {
-    logMsg('ReportRepository', msg: 'uploadResponseImage');
+    logMsg('report_repository', msg: 'uploadResponseImage');
 
     late String publicUrlPhoto;
     final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
@@ -144,7 +144,7 @@ class ReportRepository {
       await rPhotos.putData(imageBytes);
       publicUrlPhoto = await rPhotos.getDownloadURL();
     } on FirebaseException catch (e) {
-      logMsg('ReportRepository', msg: 'uploadResponseImage > error : $e');
+      logMsg('report_repository', msg: 'uploadResponseImage > error : $e');
       publicUrlPhoto = "";
       // e.g, e.code == 'canceled'
     }
@@ -159,7 +159,7 @@ class ReportRepository {
     String authorityId,
     String authorityName,
   ) async {
-    logMsg('ReportRepository', msg: 'saveResponseMessage');
+    logMsg('report_repository', msg: 'saveResponseMessage');
     final DatabaseReference dfResponses = _fbDatabase.ref('/responses/$userId/$reportId');
     final int creationTimestamp = DateTime.now().millisecondsSinceEpoch;
     await dfResponses.set({
