@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/ui/report_view_model.dart';
+import 'package:guadalupereportadashboard/ui/shimmer_content.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
@@ -47,6 +48,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// The report that is selected on the map
   Report? _selectedReport;
+
+  /// Show or hide the report cards (Report and Response)
   bool _showReportCards = false;
 
   /// To manage Google Maps state
@@ -146,11 +149,6 @@ class _DashboardPageState extends State<DashboardPage> {
   void _updateMarkers(ReportViewModel reportViewModel) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
     Map<String, Report> reportsMap = reportViewModel.reportMap;
-
-    /*if (_selectedReport != null && reportsMap.containsKey(_selectedReport?.id)) {
-      String id = _selectedReport?.id ?? '';
-      _selectedReport = reportsMap[id];
-    }*/
 
     // Clear existing markers to handle deletions and avoid duplicates
     _markers.clear();
@@ -410,7 +408,7 @@ class _DashboardPageState extends State<DashboardPage> {
               const VerticalDivider(width: 1, thickness: 1),
               // Right panel : filters, information
               SizedBox(
-                width: 500,
+                width: rightPanelWidth,
                 child: Padding(
                   padding: const EdgeInsets.all(13.0),
                   child: Column(
@@ -522,8 +520,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                                   Expanded(
                                     flex: 7,
-                                    child: /* Text('Dropdown button') */
-                                        DropdownButton(
+                                    child: DropdownButton(
                                       isExpanded: true,
                                       value: _selectedReportStatus,
                                       onChanged: (String? value) {
@@ -548,9 +545,11 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                       ),
+                      // Shimmer if full state is loading
+                      if (reportViewModel.isLoading) ShimmerContent(width: rightPanelWidth),
                       // Selected user report card
                       Visibility(
-                        visible: _showReportCards,
+                        visible: _showReportCards && !reportViewModel.isLoading,
                         child: Card(
                           child: Padding(
                             padding: const EdgeInsets.all(9.0),
@@ -612,7 +611,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       // Selected authority response card
                       Visibility(
-                        visible: _showReportCards,
+                        visible: _showReportCards && !reportViewModel.isLoading,
                         child: Card(
                           child: Padding(
                             padding: const EdgeInsets.all(9.0),
@@ -733,7 +732,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ],
           ),
-          // Navigation drawer
           drawer: Drawer(
             child: ListView(
               padding: EdgeInsets.zero,
@@ -751,17 +749,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ])),
-                /* ListTile(
-                    selected: (_drawerSelectedIndex == 0),
-                    leading: const Icon(Icons.account_circle),
-                    title: const Text('Account'),
-                    onTap: () {
-                      setState(() {
-                        _onItemDrawerTapped(0);
-                      });
-                      Navigator.pop(context);
-                    },
-                  ), */
                 ListTile(
                   selected: (_drawerSelectedIndex == 1),
                   leading: const Icon(Icons.logout),

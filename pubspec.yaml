@@ -65,6 +65,8 @@ dependencies:
   file_picker: ^10.3.10
   # Support for PointerInterceptor widget used to wrap the Google Map widget to avoid "Exception caught by gestures library"
   pointer_interceptor: ^0.10.1+2
+  # Support for shimmer effect (AKA skeleton effect)
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
