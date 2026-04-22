@@ -47,6 +47,9 @@ class ReportViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    // TODO: remove this delay (Added for testing purposes)
+    await Future.delayed(Duration(seconds: 3));
+
     try {
       // Run both requests in parallel
       final results = await Future.wait([
@@ -67,7 +70,7 @@ class ReportViewModel extends ChangeNotifier {
 
   Future<void> uploadResponseImage(
       Uint8List imageBytes,
-      String fileExtention,
+      String fileExtension,
       String userId,
       String reportId,
   ) async {
@@ -75,7 +78,7 @@ class ReportViewModel extends ChangeNotifier {
     _isImageUploadProcessFinished = false;
     notifyListeners();
 
-    final String imageName = '${ DateTime.now().millisecondsSinceEpoch }.$fileExtention';
+    final String imageName = '${ DateTime.now().millisecondsSinceEpoch }.$fileExtension';
     final String urlResponsePhoto = await _reportRepository.uploadResponseImage(imageBytes, imageName, userId, reportId);
     if (urlResponsePhoto.isNotEmpty) {
       logMsg('report_view_model', msg: 'uploadResponsePhoto > complete');
@@ -96,7 +99,15 @@ class ReportViewModel extends ChangeNotifier {
     String authorityName,
   ) async {
     logMsg('report_view_model', msg: 'saveAuthorityResponseMessage');
+    _isLoading = true;
+    notifyListeners();
+
+    // TODO: remove this delay (Added for testing purposes)
+    await Future.delayed(Duration(seconds: 3));
+
     await _reportRepository.saveResponseMessage(userId, reportId, description, authorityId, authorityName);
+
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -107,7 +118,15 @@ class ReportViewModel extends ChangeNotifier {
       ReportStatus status,
   ) async {
     logMsg('report_view_model', msg: 'updateReportStatus $status');
+    _isLoading = true;
+    notifyListeners();
+
+    // TODO: remove this delay (Added for testing purposes)
+    await Future.delayed(Duration(seconds: 3));
+
     await _reportRepository.updateReportStatus(userId, reportId, date, status);
+
+    _isLoading = false;
     notifyListeners();
   }
 }

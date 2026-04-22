@@ -82,7 +82,6 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _selectedDateFrom = dateTimePicket;
         logMsg('_DashboardPageState',  msg: '_onPressedDatePickerFrom > $_selectedDateFrom');
-        
       });
     }
   }
@@ -178,10 +177,12 @@ class _DashboardPageState extends State<DashboardPage> {
             logMsg('dashboard_screen', msg: 'Marker - onTab : ${ report.key } '
                 ', ${ ReportStatus.findByCode(report.value.status).description }');
 
+            if (reportViewModel.isLoading) return;
+
             // Get the photos of the selected report
             reportViewModel.getPhotos(report.value.userId, report.key);
 
-            logMsg('dashboard_screen', msg: report.value.toString());
+            logMsg('dashboard_screen', msg: report.value.id);
 
             setState(() {
               _selectedReport = report.value;
@@ -226,7 +227,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Padding(
                   padding: const EdgeInsets.only(left: 1.0, right: 1.0),
                   child: Stack(
-                    children: <Widget>[
+                    children: [
                       // Support for url links: Open url on the browser when click
                       InkWell(
                         child: Center(
@@ -374,7 +375,7 @@ class _DashboardPageState extends State<DashboardPage> {
             backgroundColor: Theme.of(context).colorScheme.primary,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
+              children: [
                 Text(
                   widget._title, // A [State] object's configuration is the corresponding [StatefulWidget] instance(_title)
                 ),
@@ -418,10 +419,10 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Padding(
                           padding: const EdgeInsets.all(9.0),
                           child: Column(
-                            children: <Widget>[
+                            children: [
                               // Date range:
                               Row(
-                                children: <Widget>[
+                                children: [
                                   Expanded(
                                     flex: 2,
                                     child: Text(
@@ -432,9 +433,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                   Expanded(
                                     flex: 4,
                                     child: ElevatedButton(
-                                        onPressed: () => _onPressedDatePickerFrom(context),
+                                        onPressed: () { if (!reportViewModel.isLoading) _onPressedDatePickerFrom(context); } ,
                                         child: Row(
-                                          children: <Widget>[
+                                          children: [
                                             Expanded(
                                               child: Text(DateFormat('dd/MM/yyyy')
                                                   .format(_selectedDateFrom)),
@@ -447,10 +448,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                   Expanded(
                                     flex: 4,
                                     child: ElevatedButton(
-                                      onPressed: () =>
-                                          _onPressedDatePickerTo(context),
+                                      onPressed: () { if (!reportViewModel.isLoading) _onPressedDatePickerTo(context); },
                                       child: Row(
-                                        children: <Widget>[
+                                        children: [
                                           Expanded(
                                             child: Text(
                                                 DateFormat('dd/MM/yyyy')
@@ -472,10 +472,10 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Padding(
                           padding: const EdgeInsets.all(9.0),
                           child: Column(
-                            children: <Widget>[
+                            children: [
                               // Type
                               Row(
-                                children: <Widget>[
+                                children: [
                                   Expanded(
                                     flex: 3,
                                     child: Text(
@@ -489,7 +489,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       DropdownButton(
                                         isExpanded: true,
                                         value: _selectedReportType,
-                                        onChanged: (String? value) {
+                                        onChanged: reportViewModel.isLoading ? null : (String? value) {
                                           _onChangeReportType(value);
                                         },
                                         items: _reportTypeList
@@ -510,7 +510,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                               // Status
                               Row(
-                                children: <Widget>[
+                                children: [
                                   Expanded(
                                     flex: 3,
                                     child: Text(
@@ -523,7 +523,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     child: DropdownButton(
                                       isExpanded: true,
                                       value: _selectedReportStatus,
-                                      onChanged: (String? value) {
+                                      onChanged: reportViewModel.isLoading ? null : (String? value) {
                                         _onChangeReportStatus(value);
                                       },
                                       items: _reportStatusList
@@ -617,7 +617,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             padding: const EdgeInsets.all(9.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget> [
+                              children: [
                                 // Title of the response and annular button
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -637,7 +637,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const Padding(padding: EdgeInsets.only(top: 9.0)),
                                 // Photos of the response
                                 Stack(
-                                  children: <Widget>[
+                                  children: [
                                     const Padding(
                                       padding: EdgeInsets.only(top: 3.0),
                                       //child: Center(child: CircularProgressIndicator()),
@@ -735,12 +735,12 @@ class _DashboardPageState extends State<DashboardPage> {
           drawer: Drawer(
             child: ListView(
               padding: EdgeInsets.zero,
-              children: <Widget>[
+              children: [
                 DrawerHeader(
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surface,
                     ),
-                    child: Column(children: <Widget>[
+                    child: Column(children: [
                       Text(
                         FirebaseAuth.instance.currentUser?.email ?? '-',
                         style: TextStyle(
