@@ -9,9 +9,6 @@ class ReportViewModel extends ChangeNotifier {
 
   final ReportRepository _reportRepository;
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
   Map<String, Report> _reportMap = <String, Report> {};
   UnmodifiableMapView<String, Report> get reportMap => UnmodifiableMapView(_reportMap);
 
@@ -21,10 +18,13 @@ class ReportViewModel extends ChangeNotifier {
   List<String> _currentResponsePhotos = [];
   UnmodifiableListView<String> get currentResponsePhotos => UnmodifiableListView(_currentResponsePhotos);
 
-  bool get isMaxPhotosReached => _currentResponsePhotos.length < maxAllowedResponsePhotos;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   bool _isImageUploadProcessFinished = true;
   bool get isImageUploadProcessFinished => _isImageUploadProcessFinished;
+
+  bool get isMaxPhotosReached => _currentResponsePhotos.length < maxAllowedResponsePhotos;
 
   ReportViewModel({
     ReportRepository? repository,
