@@ -24,6 +24,9 @@ class ReportViewModel extends ChangeNotifier {
   bool _isImageUploadProcessFinished = true;
   bool get isImageUploadProcessFinished => _isImageUploadProcessFinished;
 
+  bool _isSavingResponseData = false;
+  bool get isSavingResponseData => _isSavingResponseData;
+
   bool get isMaxPhotosReached => _currentResponsePhotos.length < maxAllowedResponsePhotos;
 
   ReportViewModel({
@@ -99,7 +102,7 @@ class ReportViewModel extends ChangeNotifier {
     String authorityName,
   ) async {
     logMsg('report_view_model', msg: 'saveAuthorityResponseMessage');
-    _isLoading = true;
+    _isSavingResponseData = true;
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
@@ -107,7 +110,7 @@ class ReportViewModel extends ChangeNotifier {
 
     await _reportRepository.saveResponseMessage(userId, reportId, description, authorityId, authorityName);
 
-    _isLoading = false;
+    _isSavingResponseData = false;
     notifyListeners();
   }
 
@@ -118,7 +121,7 @@ class ReportViewModel extends ChangeNotifier {
       ReportStatus status,
   ) async {
     logMsg('report_view_model', msg: 'updateReportStatus $status');
-    _isLoading = true;
+    _isSavingResponseData = true;
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
@@ -126,7 +129,7 @@ class ReportViewModel extends ChangeNotifier {
 
     await _reportRepository.updateReportStatus(userId, reportId, date, status);
 
-    _isLoading = false;
+    _isSavingResponseData = false;
     notifyListeners();
   }
 }
