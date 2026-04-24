@@ -14,6 +14,7 @@ import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../util/report_status.dart';
 import 'loading_overlay.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -32,7 +33,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final TextEditingController _responseTextController = TextEditingController();
 
   /// The report that is selected on the map
-  Report? _selectedReport;
+  //Report? _selectedReport;
 
   /// Show or hide the report cards (Report and Response)
   bool _showReportCards = false;
@@ -130,9 +131,9 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Custom marker icon
   BitmapDescriptor _markerIcon = BitmapDescriptor.defaultMarker;
   // Iterating the list of reports to create the markers of the map
-  void _updateMarkers(ReportViewModel reportViewModel) {
+  void _updateMarkers(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
-    Map<String, Report> reportsMap = reportViewModel.reportMap;
+    Map<String, Report> reportsMap = viewModel.reportMap;
 
     // Clear existing markers to handle deletions and avoid duplicates
     _markers.clear();
@@ -151,7 +152,7 @@ class _DashboardPageState extends State<DashboardPage> {
           infoWindow: InfoWindow(
             title: '${ report.value.title} '
                 '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
-                '\n ${ ReportStatus.findByCode(report.value.status).description } ',
+                '\n\n ${ ReportStatus.findByCode(report.value.status).description } ',
             snippet: '[ ${ report.value.userName} | Precisión : ${ report.value.acc.round()}m ]',
             //anchor: const Offset(5.0, 5.0),
             onTap: () {
@@ -159,18 +160,17 @@ class _DashboardPageState extends State<DashboardPage> {
             },
           ),
           onTap: () {
-            logMsg('dashboard_screen', msg: 'Marker - onTab : ${ report.key } '
-                ', ${ ReportStatus.findByCode(report.value.status).description }');
+            logMsg('dashboard_screen', msg: 'Marker - onTab key: ${ report.key }');
 
-            if (reportViewModel.isLoading || reportViewModel.isSavingResponseData) return;
+            if (viewModel.isLoading || viewModel.isSavingResponseData) return;
+
+            // Set the current report
+            viewModel.setSelectedReport(report.key);
 
             // Get the photos of the selected report
-            reportViewModel.getPhotos(report.value.userId, report.key);
-
-            logMsg('dashboard_screen', msg: report.value.id);
+            viewModel.getPhotos(report.value.userId, report.key);
 
             setState(() {
-              _selectedReport = report.value;
               _showReportCards = true;
             });
           },
@@ -257,57 +257,57 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Canceled = 666
   void _cancelButtonPressed(ReportViewModel viewModel) {
-    logMsg('dashboard_screen', msg: '_cancelButtonPressed ${ _selectedReport?.id }');
-    if (_selectedReport?.status == ReportStatus.canceled.code || !_isSelectedReportOk()) {
+    logMsg('dashboard_screen', msg: '_cancelButtonPressed ${ viewModel.currentReport.id }');
+    if (viewModel.currentReport.status == ReportStatus.canceled.code /*|| !_isSelectedReportOk()*/) {
       logMsg('dashboard_screen', msg: 'A');
       return;
     }
     logMsg('dashboard_screen', msg: 'B');
 
-    final String userId = _selectedReport!.userId;
-    final String reportId = _selectedReport!.id;
-    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp);
+    final String userId = viewModel.currentReport.userId;
+    final String reportId = viewModel.currentReport.id;
+    final String date = getDateFromTimestamp(viewModel.currentReport.creationTimestamp);
 
     viewModel.updateReportStatus(userId, reportId, date, ReportStatus.canceled); // fire and forget
   }
 
   /// InProgress = 1
   void _inProgressButtonPressed(ReportViewModel viewModel) {
-    logMsg('dashboard_screen', msg: '_inProgressButtonPressed ${ _selectedReport?.id }');
-    if (_selectedReport?.status == ReportStatus.inProgress.code || !_isSelectedReportOk()) {
+    logMsg('dashboard_screen', msg: '_inProgressButtonPressed ${ viewModel.currentReport.id }');
+    if (viewModel.currentReport.status == ReportStatus.inProgress.code /*|| !_isSelectedReportOk()*/) {
       logMsg('dashboard_screen', msg: 'A');
       return;
     }
     logMsg('dashboard_screen', msg: 'B');
 
-    final String userId = _selectedReport!.userId;
-    final String reportId = _selectedReport!.id;
-    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp);
+    final String userId = viewModel.currentReport.userId;
+    final String reportId = viewModel.currentReport.id;
+    final String date = getDateFromTimestamp(viewModel.currentReport.creationTimestamp);
 
     viewModel.updateReportStatus(userId, reportId, date, ReportStatus.inProgress); // fire and forget
   }
 
   /// Done = 2
   void _doneButtonPressed(ReportViewModel viewModel) {
-    logMsg('dashboard_screen', msg: '_doneButtonPressed ${ _selectedReport?.id }');
-    if (_selectedReport?.status == ReportStatus.done.code || !_isSelectedReportOk()) {
+    logMsg('dashboard_screen', msg: '_doneButtonPressed ${ viewModel.currentReport.id }');
+    if (viewModel.currentReport.status == ReportStatus.done.code /*|| !_isSelectedReportOk()*/) {
       logMsg('dashboard_screen', msg: 'A');
       return;
     }
     logMsg('dashboard_screen', msg: 'B');
 
-    final String userId = _selectedReport!.userId;
-    final String reportId = _selectedReport!.id;
-    final String date = getDateFromTimestamp(_selectedReport!.creationTimestamp);
+    final String userId = viewModel.currentReport.userId;
+    final String reportId = viewModel.currentReport.id;
+    final String date = getDateFromTimestamp(viewModel.currentReport.creationTimestamp);
 
     viewModel.updateReportStatus(userId, reportId, date, ReportStatus.done); // fire and forget
   }
 
-  bool _isSelectedReportOk() {
+  /*bool _isSelectedReportOk(Report report) {
     return _selectedReport != null
         && _selectedReport?.userId != null
         && _selectedReport?.creationTimestamp != null;
-  }
+  }*/
 
   Future<void> _uploadResponseImage(ReportViewModel viewModel) async {
     logMsg('_DashboardPageState', msg: '_uploadResponseImage');
@@ -331,11 +331,11 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     // Upload the image to firebase storage
-    if (_selectedReport == null) {
+    /*if (_selectedReport == null) {
       logMsg('_DashboardPageState', msg: '_uploadResponseImage > No report selected');
       return;
-    }
-    viewModel.uploadResponseImage(fileBytes, fileExtension, _selectedReport!.userId, _selectedReport!.id);
+    }*/
+    viewModel.uploadResponseImage(fileBytes, fileExtension, viewModel.currentReport.userId, viewModel.currentReport.id);
   }
 
   /// Called when this object is inserted into the tree.
@@ -352,9 +352,9 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     // Provider implementation : Consumer
     return Consumer<ReportViewModel>(
-        builder: (context, reportViewModel, child) {
+        builder: (context, viewModel, child) {
           // Load reports into markers
-          _updateMarkers(reportViewModel);
+          _updateMarkers(viewModel);
 
           return Scaffold(
             appBar: AppBar(
@@ -420,8 +420,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                         flex: 4,
                                         child: ElevatedButton(
                                             onPressed: () {
-                                              if (!reportViewModel.isLoading &&
-                                                  !reportViewModel.isSavingResponseData) {
+                                              if (!viewModel.isLoading &&
+                                                  !viewModel.isSavingResponseData) {
                                                 _onPressedDatePickerFrom(context);
                                               }
                                             } ,
@@ -440,8 +440,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                         flex: 4,
                                         child: ElevatedButton(
                                             onPressed: () {
-                                              if (!reportViewModel.isLoading &&
-                                                  !reportViewModel.isSavingResponseData) {
+                                              if (!viewModel.isLoading &&
+                                                  !viewModel.isSavingResponseData) {
                                                 _onPressedDatePickerTo(context);
                                               }
                                             },
@@ -485,8 +485,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       DropdownButton(
                                         isExpanded: true,
                                         value: _selectedReportType,
-                                        onChanged: (reportViewModel.isLoading ||
-                                            reportViewModel.isSavingResponseData) ? null : (String? value) {
+                                        onChanged: (viewModel.isLoading ||
+                                            viewModel.isSavingResponseData) ? null : (String? value) {
                                           _onChangeReportType(value);
                                         },
                                         items: _reportTypeList
@@ -520,8 +520,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       child: DropdownButton(
                                         isExpanded: true,
                                         value: _selectedReportStatus,
-                                        onChanged: (reportViewModel.isLoading ||
-                                            reportViewModel.isSavingResponseData) ? null : (String? value) {
+                                        onChanged: (viewModel.isLoading ||
+                                            viewModel.isSavingResponseData) ? null : (String? value) {
                                           _onChangeReportStatus(value);
                                         },
                                         items: _reportStatusList
@@ -544,10 +544,10 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                         // Shimmer if full state is loading
-                        if (reportViewModel.isLoading) ShimmerContent(width: rightPanelWidth),
+                        if (viewModel.isLoading) ShimmerContent(width: rightPanelWidth),
                         // Selected user report card
                         Visibility(
-                          visible: _showReportCards && !reportViewModel.isLoading,
+                          visible: _showReportCards && !viewModel.isLoading,
                           child: Card(
                             child: Padding(
                               padding: const EdgeInsets.all(9.0),
@@ -557,7 +557,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   // Title of the report
                                   Text(
                                     style: reportTitleTextStyle,
-                                    _selectedReport?.title ?? '-',
+                                    viewModel.currentReport.title,
                                     textAlign: TextAlign.start,
                                   ),
                                   const Padding(padding: EdgeInsets.only(top: 9.0)),
@@ -567,7 +567,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Expanded(
                                         flex: 7,
                                         child: Text(
-                                          _selectedReport?.userName ?? '-',
+                                          viewModel.currentReport.userName,
                                           style: reportUserAndDateTextStyle,
                                           textAlign: TextAlign.start,
                                         ),
@@ -575,31 +575,45 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Expanded(
                                         flex: 3,
                                         child: Text(
-                                          ReportStatus.findByCode(_selectedReport?.status).description,
+                                          ReportStatus.findByCode(viewModel.currentReport.status).description,
                                           style: reportStatusTextStyle,
                                           textAlign: TextAlign.end,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  // Creation datetime of the report
-                                  Text(
-                                    style: reportUserAndDateTextStyle,
-                                    getDatetimeFromTimestamp(
-                                        _selectedReport?.creationTimestamp),
-                                    textAlign: TextAlign.end,
+                                  // Creation datetime and status datetime of the report
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 7,
+                                        child: Text(
+                                          getDatetimeFromTimestamp(viewModel.currentReport.creationTimestamp),
+                                          style: reportUserAndDateTextStyle,
+                                          textAlign: TextAlign.start,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          viewModel.currentReport.getStatusDateTime(),
+                                          style: reportUserAndDateTextStyle,
+                                          textAlign: TextAlign.end,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const Padding(padding: EdgeInsets.only(top: 6.0)),
                                   // Photos of the report
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: _generatePhotoWidgets(reportViewModel.currentReportPhotos),
+                                    children: _generatePhotoWidgets(viewModel.currentReportPhotos),
                                   ),
                                   const Padding(padding: EdgeInsets.only(top: 9.0)),
                                   // Comment of the report
                                   Text(
                                     style: reportCommentTextStyle,
-                                    _selectedReport?.description ?? '-',
+                                    viewModel.currentReport.description,
                                     textAlign: TextAlign.start,
                                   ),
                                 ],
@@ -609,9 +623,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         // Selected authority response card
                         Visibility(
-                          visible: _showReportCards && !reportViewModel.isLoading,
+                          visible: _showReportCards && !viewModel.isLoading,
                           child: LoadingOverlay(
-                            isLoading: reportViewModel.isSavingResponseData,
+                            isLoading: viewModel.isSavingResponseData,
                             child: Card(
                               child: Padding(
                                 padding: const EdgeInsets.all(9.0),
@@ -646,7 +660,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                               visible: true,
                                               child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                  children: _generatePhotoWidgets(reportViewModel.currentResponsePhotos, showRemoveButton: true)
+                                                  children: _generatePhotoWidgets(viewModel.currentResponsePhotos, showRemoveButton: true)
                                               )
                                           ),
                                         ]
@@ -654,12 +668,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                     const Padding(padding: EdgeInsets.only(top: 9.0)),
                                     // Upload image progress indicator
                                     Visibility(
-                                      visible: !reportViewModel.isImageUploadProcessFinished,
+                                      visible: !viewModel.isImageUploadProcessFinished,
                                       child: LinearProgressIndicator(
-                                        value: reportViewModel.isImageUploadProcessFinished ? 1.0 : null,
+                                        value: viewModel.isImageUploadProcessFinished ? 1.0 : null,
                                         backgroundColor: Colors.grey,
                                         valueColor: AlwaysStoppedAnimation<Color>(
-                                          reportViewModel.isImageUploadProcessFinished ? Colors.green : Theme.of(context).colorScheme.primary,
+                                          viewModel.isImageUploadProcessFinished ? Colors.green : Theme.of(context).colorScheme.primary,
                                         ),
                                       ),
                                     ),
@@ -683,7 +697,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                           ElevatedButton(
                                             style: buttonStyle,
                                             onPressed:
-                                            reportViewModel.isMaxPhotosReached ?
+                                            viewModel.isMaxPhotosReached ?
                                                 () => _uploadResponseImage(Provider.of<ReportViewModel>(context, listen: false))
                                                 : null,
                                             child: const Text('Foto'),

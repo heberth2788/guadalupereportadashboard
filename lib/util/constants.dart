@@ -13,6 +13,7 @@ const int maxAllowedResponsePhotos = 3; // Maximum number of response photos all
 const String redPinAssetPath = 'images/pins/pin_red.png';
 const double rightPanelWidth = 500.0;
 const double shimmerHeight = 630.0;
+const String emptyReportId = '';
 
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 13));
 const TextStyle reportTitleTextStyle = TextStyle(fontSize: 17, fontWeight: FontWeight.bold);
@@ -24,10 +25,8 @@ const LatLng latLonGuadalupe = LatLng(-7.243271, -79.470281); // Guadalupe city'
 
 /// Parse a timestamp to a human readable string format. 
 /// E.g: 21/04/2014 06:16 pm
-String getDatetimeFromTimestamp(int? timestamp) {
-  if (timestamp == null) return '';
-
-  var date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+String getDatetimeFromTimestamp(int timestamp) {
+  final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
   return DateFormat('dd/MM/yyyy hh:mm a').format(date);
 }
 
@@ -48,26 +47,5 @@ String _getCurrentTime() {
 void logMsg(String tag, { String msg = '' }) {
   if (kDebugMode) {
     debugPrint('[ ${ _getCurrentTime() } $tag: $msg ]');
-  }
-}
-
-enum ReportStatus {
-  created(0, "REPORTADO"),
-  inProgress(1, "EN PROGRESO"),
-  done(2, "ATENDIDO"),
-  canceled(666, "ANULADO");
-
-  final int code;
-  final String description;
-
-  const ReportStatus(this.code, this.description);
-
-  static ReportStatus findByCode(int? code) {
-    for (var status in ReportStatus.values) {
-      if (status.code == code) {
-        return status;
-      }
-    }
-    return ReportStatus.canceled;
   }
 }

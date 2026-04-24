@@ -3,6 +3,7 @@ import 'package:guadalupereportadashboard/util/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/data/report_repository.dart';
+import 'package:guadalupereportadashboard/util/report_status.dart';
 
 /// Provider implementation : ChangeNotifier(Observable)
 class ReportViewModel extends ChangeNotifier {
@@ -11,6 +12,9 @@ class ReportViewModel extends ChangeNotifier {
 
   Map<String, Report> _reportMap = <String, Report> {};
   UnmodifiableMapView<String, Report> get reportMap => UnmodifiableMapView(_reportMap);
+
+  Report _currentReport = Report(id: emptyReportId);
+  Report get currentReport => _currentReport;
 
   List<String> _currentReportPhotos = [];
   UnmodifiableListView<String> get currentReportPhotos => UnmodifiableListView(_currentReportPhotos);
@@ -39,6 +43,8 @@ class ReportViewModel extends ChangeNotifier {
   void _reportNotification() {
     logMsg('report_view_model', msg: '_reportNotification');
     _reportMap = _reportRepository.reportMap;
+    final Report report = _reportMap[_currentReport.id] ?? Report(id: emptyReportId);
+    _currentReport = report;
     notifyListeners();
   }
 
@@ -130,6 +136,14 @@ class ReportViewModel extends ChangeNotifier {
     await _reportRepository.updateReportStatus(userId, reportId, date, status);
 
     _isSavingResponseData = false;
+    notifyListeners();
+  }
+
+  void setSelectedReport(String reportId) {
+    logMsg('report_view_model', msg: 'setSelectedReport $reportId');
+    final Report report = _reportMap[reportId] ?? Report(id: emptyReportId);
+
+    _currentReport = report;
     notifyListeners();
   }
 }

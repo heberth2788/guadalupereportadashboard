@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
+import 'package:guadalupereportadashboard/util/report_status.dart';
 
 class ReportRepository {
 

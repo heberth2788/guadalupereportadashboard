@@ -1,3 +1,6 @@
+import '../util/constants.dart';
+import '../util/report_status.dart';
+
 class Report {
   final String id;
   double acc;
@@ -6,6 +9,7 @@ class Report {
   String description;
   int doneTimestamp;
   int inProgressTimestamp;
+  int canceledTimestamp;
   double lat;
   double lon;
   int status;
@@ -22,6 +26,7 @@ class Report {
     this.description = '',
     this.doneTimestamp = 0,
     this.inProgressTimestamp = 0,
+    this.canceledTimestamp = 0,
     this.lat = 0.0,
     this.lon = 0.0,
     this.status = 0,
@@ -40,6 +45,7 @@ class Report {
       description: map['description']?.toString() ?? '',
       doneTimestamp: map['doneTimestamp'] as int? ?? 0,
       inProgressTimestamp: map['inProgressTimestamp'] as int? ?? 0,
+      canceledTimestamp: map['canceledTimestamp'] as int? ?? 0,
       lat: (map['lat'] as num?)?.toDouble() ?? 0.0,
       lon: (map['lon'] as num?)?.toDouble() ?? 0.0,
       status: map['status'] as int? ?? 0,
@@ -48,5 +54,21 @@ class Report {
       userName: map['userName']?.toString() ?? '',
       visible: map['visible'] as bool? ?? true,
     );
+  }
+
+  String getStatusDateTime() {
+    final reportStatus = ReportStatus.findByCode(status);
+
+    if (reportStatus == ReportStatus.created) {
+      return getDatetimeFromTimestamp(creationTimestamp);
+    } else if (reportStatus == ReportStatus.inProgress) {
+      return getDatetimeFromTimestamp(inProgressTimestamp);
+    } else if (reportStatus == ReportStatus.done) {
+      return getDatetimeFromTimestamp(doneTimestamp);
+    } else if (reportStatus == ReportStatus.canceled) {
+      return getDatetimeFromTimestamp(canceledTimestamp);
+    }
+
+    return '';
   }
 }
