@@ -5,6 +5,8 @@ import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/data/report_repository.dart';
 import 'package:guadalupereportadashboard/util/report_status.dart';
 
+import '../data/response.dart';
+
 /// Provider implementation : ChangeNotifier(Observable)
 class ReportViewModel extends ChangeNotifier {
 
@@ -13,11 +15,14 @@ class ReportViewModel extends ChangeNotifier {
   Map<String, Report> _reportMap = <String, Report> {};
   UnmodifiableMapView<String, Report> get reportMap => UnmodifiableMapView(_reportMap);
 
-  Report _currentReport = Report(id: emptyReportId);
+  Report _currentReport = Report(id: empty);
   Report get currentReport => _currentReport;
 
   List<String> _currentReportPhotos = [];
   UnmodifiableListView<String> get currentReportPhotos => UnmodifiableListView(_currentReportPhotos);
+  
+  Response _currentResponse = Response(userId: empty, reportId: empty);
+  Response get currentResponse => _currentResponse;
 
   List<String> _currentResponsePhotos = [];
   UnmodifiableListView<String> get currentResponsePhotos => UnmodifiableListView(_currentResponsePhotos);
@@ -37,45 +42,64 @@ class ReportViewModel extends ChangeNotifier {
     ReportRepository? repository,
   }): _reportRepository = repository ?? ReportRepository() {
     logMsg('report_view_model', msg: 'ReportViewModel');
-    _reportRepository.fetchAllReports(_reportNotification);
+    _reportRepository.fetchAllReports(_notifyReportsUpdate);
   }
 
-  void _reportNotification() {
-    logMsg('report_view_model', msg: '_reportNotification');
-    _reportMap = _reportRepository.reportMap;
-    final Report report = _reportMap[_currentReport.id] ?? Report(id: emptyReportId);
-    _currentReport = report;
-    notifyListeners();
-  }
-
-  void fetchReportsByDateRange() {
-    _reportRepository.fetchReportByDateRange('', '', _reportNotification);
-  }
-
-  Future<void> getPhotos(String userId, String reportId) async {
+  Future<void> fetchReportData(String reportId) async {
+    logMsg('report_view_model', msg: 'fetchReportData');
     _isLoading = true;
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
     await Future.delayed(Duration(seconds: 3));
 
+    // Set the current report
+    _currentReport = _reportMap[reportId] ?? Report(id: empty);
+
+    await Future.wait([
+      _fetchResponse(), // Get the response of the selected report
+      _getPhotos(), // Get the photos of the selected report
+    ]);
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> _fetchResponse() async {
+    logMsg('report_view_model', msg: '_fetchResponse');
+    _currentResponse = await _reportRepository.fetchResponse(_currentReport.userId, _currentReport.id);
+    logMsg('report_view_model', msg: '_fetchResponse > ${ _currentResponse.message }');
+  }
+
+  Future<void> _getPhotos() async {
+    logMsg('report_view_model', msg: '_getPhotos');
     try {
       // Run both requests in parallel
-      final results = await Future.wait([
-        _reportRepository.fetchReportImages(userId, reportId),
-        _reportRepository.fetchResponseImages(userId, reportId),
+      final List<List<String>> photosResult = await Future.wait([
+        _reportRepository.fetchReportImages(_currentReport.userId, _currentReport.id),
+        _reportRepository.fetchResponseImages(_currentReport.userId, _currentReport.id),
       ]);
-      _currentReportPhotos = results[0];
-      _currentResponsePhotos = results[1];
+      _currentReportPhotos = photosResult[0];
+      _currentResponsePhotos = photosResult[1];
     } catch (e) {
       logMsg('report_view_model', msg: 'Error fetching photos: $e');
       _currentReportPhotos = [];
       _currentResponsePhotos = [];
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
   }
+
+  void _notifyReportsUpdate() {
+    logMsg('report_view_model', msg: '_notifyReportsUpdate');
+    _reportMap = _reportRepository.reportMap;
+    final Report report = _reportMap[_currentReport.id] ?? Report(id: empty);
+    _currentReport = report;
+
+    notifyListeners();
+  }
+
+  /*void fetchReportsByDateRange() {
+    _reportRepository.fetchReportByDateRange('', '', _reportNotification);
+  }*/
 
   Future<void> uploadResponseImage(
       Uint8List imageBytes,
@@ -100,13 +124,7 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveAuthorityResponseMessage(
-    String userId, 
-    String reportId,
-    String description,
-    String authorityId,
-    String authorityName,
-  ) async {
+  Future<void> upsertAuthorityResponseMessage(String message) async {
     logMsg('report_view_model', msg: 'saveAuthorityResponseMessage');
     _isSavingResponseData = true;
     notifyListeners();
@@ -114,7 +132,13 @@ class ReportViewModel extends ChangeNotifier {
     // TODO: remove this delay (Added for testing purposes)
     await Future.delayed(Duration(seconds: 3));
 
-    await _reportRepository.saveResponseMessage(userId, reportId, description, authorityId, authorityName);
+    await _reportRepository.saveResponseMessage(
+      _currentReport.userId,
+      _currentReport.id,
+      message,
+      _currentResponse.authorityId,
+      _currentResponse.authorityName,
+    );
 
     _isSavingResponseData = false;
     notifyListeners();
@@ -136,14 +160,6 @@ class ReportViewModel extends ChangeNotifier {
     await _reportRepository.updateReportStatus(userId, reportId, date, status);
 
     _isSavingResponseData = false;
-    notifyListeners();
-  }
-
-  void setSelectedReport(String reportId) {
-    logMsg('report_view_model', msg: 'setSelectedReport $reportId');
-    final Report report = _reportMap[reportId] ?? Report(id: emptyReportId);
-
-    _currentReport = report;
     notifyListeners();
   }
 }

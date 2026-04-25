@@ -13,7 +13,7 @@ const int maxAllowedResponsePhotos = 3; // Maximum number of response photos all
 const String redPinAssetPath = 'images/pins/pin_red.png';
 const double rightPanelWidth = 500.0;
 const double shimmerHeight = 630.0;
-const String emptyReportId = '';
+const String empty = '';
 
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 13));
 const TextStyle reportTitleTextStyle = TextStyle(fontSize: 17, fontWeight: FontWeight.bold);

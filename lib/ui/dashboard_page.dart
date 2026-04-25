@@ -4,6 +4,7 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/ui/report_view_model.dart';
@@ -130,13 +131,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Custom marker icon
   BitmapDescriptor _markerIcon = BitmapDescriptor.defaultMarker;
-  // Iterating the list of reports to create the markers of the map
+
+  /// Iterating the list of reports to create the markers of the map
   void _updateMarkers(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
     Map<String, Report> reportsMap = viewModel.reportMap;
 
     // Clear existing markers to handle deletions and avoid duplicates
     _markers.clear();
+    _responseTextController.text = viewModel.currentResponse.message.trim();
 
     if (reportsMap.isNotEmpty) {
       Marker markerPivot;
@@ -148,7 +151,7 @@ class _DashboardPageState extends State<DashboardPage> {
             report.value.lat,
             report.value.lon,
           ),
-          icon: _markerIcon, //BitmapDescriptor.defaultMarker,
+          icon: _markerIcon,
           infoWindow: InfoWindow(
             title: '${ report.value.title} '
                 '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
@@ -164,11 +167,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             if (viewModel.isLoading || viewModel.isSavingResponseData) return;
 
-            // Set the current report
-            viewModel.setSelectedReport(report.key);
-
-            // Get the photos of the selected report
-            viewModel.getPhotos(report.value.userId, report.key);
+            viewModel.fetchReportData(report.key);
 
             setState(() {
               _showReportCards = true;
@@ -191,7 +190,7 @@ class _DashboardPageState extends State<DashboardPage> {
           _markerIcon = icon;
         });
       }
-    } catch(e) { // TODO: this catch body is always executed, why?
+    } catch(e) { // TODO: , why does this catch body is always executed ?
       logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker > error : $e');
     }
   }
@@ -200,8 +199,8 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Widget> _generatePhotoWidgets(
       List<String> photosUrlList,
       { bool showRemoveButton = false }
-      ) {
-    logMsg('dashboard_screen', msg: '_DashboardPageState > _generatePhotoWidgets');
+  ) {
+    logMsg('dashboard_screen', msg: '_DashboardPageState > _generatePhotoWidgets: ${ photosUrlList.length }');
     List<Widget> listOfWidgets = [];
     int flexValue = photosUrlList.length;
 
@@ -338,13 +337,29 @@ class _DashboardPageState extends State<DashboardPage> {
     viewModel.uploadResponseImage(fileBytes, fileExtension, viewModel.currentReport.userId, viewModel.currentReport.id);
   }
 
+  void _saveResponseButtonPressed(ReportViewModel viewModel) {
+    final String message = _responseTextController.text.trim();
+    if (message.isEmpty) return;
+
+    /*final String authorityId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final String authorityName = FirebaseAuth.instance.currentUser?.displayName ?? '';*/
+
+    viewModel.upsertAuthorityResponseMessage(message);
+  }
+
   /// Called when this object is inserted into the tree.
   /// The framework will call this method exactly once
   /// for each [State] object it creates.
   @override
   void initState() {
     super.initState();
-    _loadCustomMarker(); // fire and forget
+    _loadCustomMarker(); // fire and forget async method
+  }
+
+  @override
+  void dispose() {
+    _responseTextController.dispose();
+    super.dispose();
   }
 
   /// Home dashboard widget building
@@ -730,7 +745,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         children: [
                                           ElevatedButton(
                                             style: buttonStyle,
-                                            onPressed: () { logMsg("dashboard_screen", msg: "Guardar"); },
+                                            onPressed: () => _saveResponseButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
                                             child: const Text('Guardar'),
                                           ),
                                         ]

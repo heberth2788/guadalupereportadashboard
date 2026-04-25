@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:guadalupereportadashboard/data/response.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
 import 'package:guadalupereportadashboard/util/report_status.dart';
 
@@ -85,6 +87,40 @@ class ReportRepository {
     return _fbDatabase.ref().update(updates);
   }
 
+  /// Save the response message to firebase database for a specific user and report
+  Future<void> saveResponseMessage(
+      String userId,
+      String reportId,
+      String message,
+      String authorityId,
+      String authorityName,
+  ) async {
+    logMsg('report_repository', msg: 'saveResponseMessage');
+    final DatabaseReference dfResponses = _fbDatabase.ref('/responses/$userId/$reportId');
+    final int creationTimestamp = DateTime.now().millisecondsSinceEpoch;
+
+    final String authId = authorityId.isEmpty ? FirebaseAuth.instance.currentUser?.uid ?? '' : authorityId;
+    final String authName = authorityName.isEmpty ? FirebaseAuth.instance.currentUser?.displayName ?? '' : authorityName;
+
+    await dfResponses.set({
+      'message': message,
+      'authorityId': authId,
+      'authorityName': authName,
+      'creationTimestamp': creationTimestamp,
+      'visible': true,
+    });
+  }
+
+  Future<Response> fetchResponse(String userId, String reportId) async {
+    logMsg('report_repository', msg: 'fetchResponse userId: $userId , reportId: $reportId');
+    final DatabaseEvent event = await _fbDatabase.ref('/responses/$userId/$reportId').once(DatabaseEventType.value);
+    final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
+    if (data == null) return Response(userId: userId, reportId: reportId);
+
+    return Response.fromMap(userId, reportId, data);
+  }
+
   ///////////////////////////////////////////////////////////////////////////////////////
   /// Methods for Firebase Storage
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -150,26 +186,6 @@ class ReportRepository {
       // e.g, e.code == 'canceled'
     }
     return publicUrlPhoto;
-  }
-
-  /// Save the response message to firebase database for a specific user and report
-  Future<void> saveResponseMessage(
-    String userId,
-    String reportId,
-    String description,
-    String authorityId,
-    String authorityName,
-  ) async {
-    logMsg('report_repository', msg: 'saveResponseMessage');
-    final DatabaseReference dfResponses = _fbDatabase.ref('/responses/$userId/$reportId');
-    final int creationTimestamp = DateTime.now().millisecondsSinceEpoch;
-    await dfResponses.set({
-      'description': description,
-      'authorityId': authorityId,
-      'authorityName': authorityName,
-      'creationTimestamp': creationTimestamp,
-      'visible': 1,
-    });
   }
 
   // Generic helper for fetching images
