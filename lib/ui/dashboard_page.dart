@@ -4,12 +4,12 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/ui/report_view_model.dart';
 import 'package:guadalupereportadashboard/ui/shimmer_content.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
+import 'package:guadalupereportadashboard/util/util.dart';
 import 'package:intl/intl.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
@@ -427,7 +427,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Expanded(
                                         flex: 2,
                                         child: Text(
-                                          'Fechas :',
+                                          strDates,
                                           style: Theme.of(context).textTheme.titleSmall,
                                         ),
                                       ),
@@ -490,7 +490,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     Expanded(
                                       flex: 3,
                                       child: Text(
-                                        'Tipo :',
+                                        strType,
                                         style: Theme.of(context).textTheme.titleSmall,
                                       ),
                                     ),
@@ -526,7 +526,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     Expanded(
                                       flex: 3,
                                       child: Text(
-                                        'Estado : ',
+                                        strStatus,
                                         style: Theme.of(context).textTheme.titleSmall,
                                       ),
                                     ),
@@ -653,13 +653,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                       children: [
                                         const Text(
                                           style: reportTitleTextStyle,
-                                          'Respuesta',
+                                          strResponse,
                                           textAlign: TextAlign.start,
                                         ),
                                         ElevatedButton(
                                           style: buttonStyle,
                                           onPressed: () => _cancelButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
-                                          child: const Text('Anular'),
+                                          child: const Text(strCancel),
                                         ),
                                       ],
                                     ),
@@ -700,13 +700,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                           ElevatedButton(
                                             style: buttonStyle,
                                             onPressed: () => _inProgressButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
-                                            child: const Text('En progreso'),
+                                            child: const Text(strInProgress),
                                           ),
                                           const Padding(padding: EdgeInsets.only(right: 9.0)),
                                           ElevatedButton(
                                             style: buttonStyle,
                                             onPressed: () => _doneButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
-                                            child: const Text('Atendido'),
+                                            child: const Text(strDone),
                                           ),
                                           const Spacer(),
                                           ElevatedButton(
@@ -715,7 +715,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             viewModel.isMaxPhotosReached ?
                                                 () => _uploadResponseImage(Provider.of<ReportViewModel>(context, listen: false))
                                                 : null,
-                                            child: const Text('Foto'),
+                                            child: const Text(strPhoto),
                                           ),
                                         ]
                                     ),
@@ -727,7 +727,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       maxLines: 2,
                                       decoration: const InputDecoration(
                                         border: OutlineInputBorder(),
-                                        hintText: 'Escribir respuesta...',
+                                        hintText: strHintTextWriteResponse,
                                       ),
                                       textCapitalization: TextCapitalization.sentences,
                                       autofocus: true,
@@ -746,7 +746,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                           ElevatedButton(
                                             style: buttonStyle,
                                             onPressed: () => _saveResponseButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
-                                            child: const Text('Guardar'),
+                                            child: const Text(strSave),
                                           ),
                                         ]
                                     ),
@@ -782,7 +782,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ListTile(
                     selected: (_drawerSelectedIndex == 1),
                     leading: const Icon(Icons.logout),
-                    title: const Text('Logout'),
+                    title: const Text(strLogout),
                     onTap: () {
                       //setState(() {
                       _onItemDrawerTapped(1);

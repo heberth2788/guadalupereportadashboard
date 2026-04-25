@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 
 const double zoomMapValue = 15.0;
 const String appTitle = "Panel de reportes";
@@ -23,29 +21,15 @@ const TextStyle reportCommentTextStyle = TextStyle(fontSize: 13, fontWeight: Fon
 
 const LatLng latLonGuadalupe = LatLng(-7.243271, -79.470281); // Guadalupe city's location
 
-/// Parse a timestamp to a human readable string format. 
-/// E.g: 21/04/2014 06:16 pm
-String getDatetimeFromTimestamp(int timestamp) {
-  final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  return DateFormat('dd/MM/yyyy hh:mm a').format(date);
-}
-
-String getDateFromTimestamp(int? timestamp) {
-  if (timestamp == null) return '';
-
-  var date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  return DateFormat('ddMMyyyy').format(date);
-}
-
-String _getCurrentTime() {
-  var now = DateTime.now();
-  return DateFormat('hh:mm:ss').format(now);
-}
-
-/// Logs messages for debugging and informational purposes.
-/// [tag] is a label for the log source, [msg] is the message to log.
-void logMsg(String tag, { String msg = '' }) {
-  if (kDebugMode) {
-    debugPrint('[ ${ _getCurrentTime() } $tag: $msg ]');
-  }
-}
+// UI text constants
+const String strDates = 'Fechas :';
+const String strType = 'Tipo :';
+const String strStatus = 'Estado :';
+const String strResponse = 'Respuesta';
+const String strCancel = 'Anular';
+const String strInProgress = 'En progreso';
+const String strDone = 'Atendido';
+const String strPhoto = 'Foto';
+const String strHintTextWriteResponse = 'Escribir respuesta...';
+const String strSave = 'Guardar';
+const String strLogout = 'Cerrar sessión';
