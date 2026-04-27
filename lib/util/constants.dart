@@ -22,7 +22,10 @@ const TextStyle reportCommentTextStyle = TextStyle(fontSize: 13, fontWeight: Fon
 //region Google Maps constants
 const LatLng latLngGuadalupe = LatLng(-7.243271, -79.470281); // Guadalupe city's location
 const String mapId = '7370104ef8b1c0e23253acdd';
-const String redPinAssetPath = 'assets/images/pins/pin_red.png';
+const String createdPinAssetPath = 'assets/images/pins/pin_red.png';
+const String inProgressPinAssetPath = 'assets/images/pins/pin_black.png';
+const String donePinAssetPath = 'assets/images/pins/pin_blue.png';
+const String canceledPinAssetPath = 'assets/images/pins/pin_white.png';
 const Size markerSize = Size(40, 40); // Size of the pin on the map (Alternatives: Size(24, 24), Size(32, 32))
 const double zoomMapValue = 15.0;
 //endregion

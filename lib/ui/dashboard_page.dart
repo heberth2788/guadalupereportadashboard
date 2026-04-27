@@ -123,8 +123,8 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  /// Custom marker icon
-  BitmapDescriptor _markerIcon = BitmapDescriptor.defaultMarker;
+  /// Custom marker icons
+  final Set<BitmapDescriptor> _markerIcons = { BitmapDescriptor.defaultMarker };
 
   /// Iterating the list of reports to create the markers of the map
   Set<Marker> _createMarkers(ReportViewModel viewModel) {
@@ -134,17 +134,21 @@ class _DashboardPageState extends State<DashboardPage> {
     if (reportsMap.isEmpty) return { };
 
     return reportsMap.entries.map((report) {
+
+      ReportStatus reportStatus = ReportStatus.findByCode(report.value.status);
+      BitmapDescriptor markerIcon = _findPinIcon(reportStatus);
+
       return Marker(
         markerId: MarkerId(report.key),
         position: LatLng(
           report.value.lat,
           report.value.lon,
         ),
-        icon: _markerIcon,
+        icon: markerIcon,
         infoWindow: InfoWindow(
           title: '${ report.value.title} '
               '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
-              '\n\n ${ ReportStatus.findByCode(report.value.status).description } ',
+              '\n\n ${ reportStatus.description } ',
           snippet: '[ ${ report.value.userName} | Precisión : ${ report.value.acc.round()}m ]',
           //anchor: const Offset(5.0, 5.0),
           onTap: () {
@@ -168,22 +172,35 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  /// Load a custom pin as a marker icon
-  Future<void> _loadCustomMarker() async {
+  BitmapDescriptor _findPinIcon(ReportStatus reportStatus) {
+    return switch(reportStatus) {
+      ReportStatus.created => _markerIcons.elementAt(0),
+      ReportStatus.inProgress => _markerIcons.elementAt(1),
+      ReportStatus.done => _markerIcons.elementAt(2),
+      ReportStatus.canceled => _markerIcons.elementAt(3),
+    };
+  }
+
+  /// Load a custom pins as a marker icons
+  Future<void> _loadCustomMarkers() async {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker');
     // Optimization: Don't reload if we already have the custom icon
-    if (_markerIcon != BitmapDescriptor.defaultMarker) return;
+    if (!_markerIcons.contains(BitmapDescriptor.defaultMarker)) return;
 
     try {
       // Ensure the widget is still mounted before proceeding with context-dependent calls
       if (!mounted) return;
 
       final ImageConfiguration imgConfig = createLocalImageConfiguration(context, size: markerSize);
-      final BitmapDescriptor icon = await BitmapDescriptor.asset(imgConfig, redPinAssetPath);
+      final List<AssetMapBitmap> pinIcons = await Future.wait([
+        BitmapDescriptor.asset(imgConfig, createdPinAssetPath),
+        BitmapDescriptor.asset(imgConfig, inProgressPinAssetPath),
+        BitmapDescriptor.asset(imgConfig, donePinAssetPath),
+        BitmapDescriptor.asset(imgConfig, canceledPinAssetPath),
+      ]);
 
-      setState(() {
-        _markerIcon = icon;
-      });
+      _markerIcons.clear();
+      _markerIcons.addAll(pinIcons);
     } catch (e, stackTrace) {
       logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker > error : ${ stackTrace.toString() }');
     }
@@ -325,7 +342,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Delay execution until the first frame is rendered to ensure context is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadCustomMarker(); // fire and forget async method
+      _loadCustomMarkers(); // fire and forget async method
     });
   }
 
