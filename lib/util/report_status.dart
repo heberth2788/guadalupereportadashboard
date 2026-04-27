@@ -1,4 +1,5 @@
 enum ReportStatus {
+
   created(0, "REPORTADO"),
   inProgress(1, "EN PROGRESO"),
   done(2, "ATENDIDO"),

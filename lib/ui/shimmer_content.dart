@@ -6,7 +6,10 @@ class ShimmerContent extends StatelessWidget {
 
   final double width;
 
-  const ShimmerContent({super.key, required this.width});
+  const ShimmerContent({
+    super.key,
+    required this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,7 @@ class ShimmerContent extends StatelessWidget {
         highlightColor: Colors.grey[100]!,
         child: ListView.builder(
           itemCount: 2,
-          itemBuilder: (context, index) => Padding(
+          itemBuilder: (_, __) => Padding(
             padding: const EdgeInsets.all(9.0),
             child: Row(
               children: [

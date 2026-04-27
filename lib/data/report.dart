@@ -2,6 +2,7 @@ import '../util/util.dart';
 import '../util/report_status.dart';
 
 class Report {
+
   final String id;
   double acc;
   double alt;

@@ -13,7 +13,7 @@ class DashboardScreen extends StatelessWidget {
     // Provider implementation : ChangeNotifierProvider
     return ChangeNotifierProvider(
       create: (context) => ReportViewModel(),
-      child: const DashboardPage(title: appTitle),
+      child: const DashboardPage(title: strAppTitle),
     );
   }
 }

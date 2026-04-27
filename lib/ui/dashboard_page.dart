@@ -22,7 +22,10 @@ class DashboardPage extends StatefulWidget {
 
   final String _title;
 
-  const DashboardPage({ super.key, required String title }) : _title = title;
+  const DashboardPage({
+    super.key,
+    required String title,
+  }): _title = title;
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -33,16 +36,11 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Controller for the response text field
   final TextEditingController _responseTextController = TextEditingController();
 
-  /// The report that is selected on the map
-  //Report? _selectedReport;
-
   /// Show or hide the report cards (Report and Response)
   bool _showReportCards = false;
 
   /// To manage Google Maps state
   late GoogleMapController _gmController;
-  // Plaza de armas de Guadalupe : -7.243271, -79.470281
-  //final LatLng _latLonCenter = const LatLng(-7.243271, -79.470281);
   void _onMapCreated(GoogleMapController controller) {
     _gmController = controller;
   }
@@ -139,6 +137,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Clear existing markers to handle deletions and avoid duplicates
     _markers.clear();
+
+    // Set the response text field
     _responseTextController.text = viewModel.currentResponse.message.trim();
 
     if (reportsMap.isNotEmpty) {
@@ -184,14 +184,15 @@ class _DashboardPageState extends State<DashboardPage> {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker');
     try {
       final ImageConfiguration imgConfig = createLocalImageConfiguration(context, size: markerSize);
-      final BitmapDescriptor icon = await BitmapDescriptor.asset(imgConfig, redPinAssetPath);
+      final BitmapDescriptor icon = await BitmapDescriptor.fromAssetImage(imgConfig, redPinAssetPath);
+      //final BitmapDescriptor icon = await BitmapDescriptor.asset(imgConfig, redPinAssetPath);
       if (mounted) {
         setState(() {
           _markerIcon = icon;
         });
       }
-    } catch(e) { // TODO: , why does this catch body is always executed ?
-      logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker > error : $e');
+    } catch (_, stackTrace) { // TODO: , why does this catch body is always executed ?
+      logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker > error : ${ stackTrace.toString() }');
     }
   }
 
@@ -257,11 +258,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Canceled = 666
   void _cancelButtonPressed(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_cancelButtonPressed ${ viewModel.currentReport.id }');
-    if (viewModel.currentReport.status == ReportStatus.canceled.code /*|| !_isSelectedReportOk()*/) {
-      logMsg('dashboard_screen', msg: 'A');
-      return;
-    }
-    logMsg('dashboard_screen', msg: 'B');
+    if (viewModel.currentReport.status == ReportStatus.canceled.code) return;
 
     final String userId = viewModel.currentReport.userId;
     final String reportId = viewModel.currentReport.id;
@@ -273,11 +270,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// InProgress = 1
   void _inProgressButtonPressed(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_inProgressButtonPressed ${ viewModel.currentReport.id }');
-    if (viewModel.currentReport.status == ReportStatus.inProgress.code /*|| !_isSelectedReportOk()*/) {
-      logMsg('dashboard_screen', msg: 'A');
-      return;
-    }
-    logMsg('dashboard_screen', msg: 'B');
+    if (viewModel.currentReport.status == ReportStatus.inProgress.code) return;
 
     final String userId = viewModel.currentReport.userId;
     final String reportId = viewModel.currentReport.id;
@@ -289,11 +282,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Done = 2
   void _doneButtonPressed(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_doneButtonPressed ${ viewModel.currentReport.id }');
-    if (viewModel.currentReport.status == ReportStatus.done.code /*|| !_isSelectedReportOk()*/) {
-      logMsg('dashboard_screen', msg: 'A');
-      return;
-    }
-    logMsg('dashboard_screen', msg: 'B');
+    if (viewModel.currentReport.status == ReportStatus.done.code) return;
 
     final String userId = viewModel.currentReport.userId;
     final String reportId = viewModel.currentReport.id;
@@ -301,12 +290,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
     viewModel.updateReportStatus(userId, reportId, date, ReportStatus.done); // fire and forget
   }
-
-  /*bool _isSelectedReportOk(Report report) {
-    return _selectedReport != null
-        && _selectedReport?.userId != null
-        && _selectedReport?.creationTimestamp != null;
-  }*/
 
   Future<void> _uploadResponseImage(ReportViewModel viewModel) async {
     logMsg('_DashboardPageState', msg: '_uploadResponseImage');
@@ -330,19 +313,12 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     // Upload the image to firebase storage
-    /*if (_selectedReport == null) {
-      logMsg('_DashboardPageState', msg: '_uploadResponseImage > No report selected');
-      return;
-    }*/
     viewModel.uploadResponseImage(fileBytes, fileExtension, viewModel.currentReport.userId, viewModel.currentReport.id);
   }
 
   void _saveResponseButtonPressed(ReportViewModel viewModel) {
     final String message = _responseTextController.text.trim();
     if (message.isEmpty) return;
-
-    /*final String authorityId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final String authorityName = FirebaseAuth.instance.currentUser?.displayName ?? '';*/
 
     viewModel.upsertAuthorityResponseMessage(message);
   }
@@ -377,9 +353,7 @@ class _DashboardPageState extends State<DashboardPage> {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    widget._title, // A [State] object's configuration is the corresponding [StatefulWidget] instance(_title)
-                  ),
+                  Text(widget._title),
                 ],
               ),
               foregroundColor: Theme.of(context).colorScheme.surface,
@@ -443,8 +417,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             child: Row(
                                               children: [
                                                 Expanded(
-                                                  child: Text(DateFormat('dd/MM/yyyy')
-                                                      .format(_selectedDateFrom)),
+                                                  child: Text(getDateFromDateTime(_selectedDateFrom)),
                                                 ),
                                                 //const Icon(Icons.date_range),
                                               ],
@@ -463,9 +436,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             child: Row(
                                               children: [
                                                 Expanded(
-                                                  child: Text(
-                                                      DateFormat('dd/MM/yyyy')
-                                                          .format(_selectedDateTo)),
+                                                  child: Text(getDateFromDateTime(_selectedDateTo)),
                                                 ),
                                                 //const Icon(Icons.date_range),
                                               ],

@@ -15,6 +15,8 @@ String getDateFromTimestamp(int? timestamp) {
   return DateFormat('ddMMyyyy').format(date);
 }
 
+String getDateFromDateTime(DateTime dateTime) => DateFormat('dd/MM/yyyy').format(dateTime);
+
 /// Logs messages for debugging and informational purposes.
 /// [tag] is a label for the log source, [msg] is the message to log.
 void logMsg(String tag, { String msg = '' }) {

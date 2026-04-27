@@ -20,7 +20,7 @@ class AuthenticationScreen extends StatelessWidget {
     // of data from a `Stream` that you pass it. It automatically rebuilds when the
     // Stream emits a new snapshot.
     return MaterialApp(
-      title: appTitle,
+      title: strAppTitle,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: seedColor),

@@ -1,4 +1,5 @@
 class Response {
+
   final String userId;
   final String reportId;
   String message;

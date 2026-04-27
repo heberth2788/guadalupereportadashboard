@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 const double zoomMapValue = 15.0;
-const String appTitle = "Panel de reportes";
-const int  startingYear = 2023;
-const int rangeDays = 63; //21;
+const int startingYear = 2023;
+const int rangeDays = 63;
 const Color seedColor = Color.fromRGBO(60, 105, 27, 0); // Const for material theme
-const Size markerSize = Size(40, 40); // Size of the pin on the map
+const Size markerSize = Size(40, 40); // Size of the pin on the map (Alternatives: Size(24, 24), Size(32, 32))
 const int maxAllowedResponsePhotos = 3; // Maximum number of response photos allowed
 const String redPinAssetPath = 'images/pins/pin_red.png';
 const double rightPanelWidth = 500.0;
@@ -21,7 +20,8 @@ const TextStyle reportCommentTextStyle = TextStyle(fontSize: 13, fontWeight: Fon
 
 const LatLng latLonGuadalupe = LatLng(-7.243271, -79.470281); // Guadalupe city's location
 
-// UI text constants
+//region UI text constants
+const String strAppTitle = "Panel de reportes";
 const String strDates = 'Fechas :';
 const String strType = 'Tipo :';
 const String strStatus = 'Estado :';
@@ -33,3 +33,4 @@ const String strPhoto = 'Foto';
 const String strHintTextWriteResponse = 'Escribir respuesta...';
 const String strSave = 'Guardar';
 const String strLogout = 'Cerrar sessión';
+//endregion
