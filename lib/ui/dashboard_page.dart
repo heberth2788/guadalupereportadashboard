@@ -123,59 +123,53 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  /// To storage the markers(of each report) on the map
-  final Set<Marker> _markers = { };
-
   /// Custom marker icon
   BitmapDescriptor _markerIcon = BitmapDescriptor.defaultMarker;
 
   /// Iterating the list of reports to create the markers of the map
-  void _updateMarkers(ReportViewModel viewModel) {
-    logMsg('dashboard_screen', msg: '_DashboardPageState > _updateMarkers');
+  Set<Marker> _createMarkers(ReportViewModel viewModel) {
+    logMsg('dashboard_screen', msg: '_DashboardPageState > _createMarkers');
     Map<String, Report> reportsMap = viewModel.reportMap;
 
-    // Clear existing markers to handle deletions and avoid duplicates
-    _markers.clear();
-
     // Set the response text field
+    // TODO: look into the best place to update the response text
     _responseTextController.text = viewModel.currentResponse.message.trim();
 
-    if (reportsMap.isNotEmpty) {
-      Marker markerPivot;
-      //markers = {};
-      for (MapEntry<String, Report> report in reportsMap.entries) {
-        markerPivot = Marker(
-          markerId: MarkerId(report.key),
-          position: LatLng(
-            report.value.lat,
-            report.value.lon,
-          ),
-          icon: _markerIcon,
-          infoWindow: InfoWindow(
-            title: '${ report.value.title} '
-                '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
-                '\n\n ${ ReportStatus.findByCode(report.value.status).description } ',
-            snippet: '[ ${ report.value.userName} | Precisión : ${ report.value.acc.round()}m ]',
-            //anchor: const Offset(5.0, 5.0),
-            onTap: () {
-              logMsg('dashboard_screen', msg: 'InfoWindow - onTab : ${ report.key }');
-            },
-          ),
+    if (reportsMap.isEmpty) return { };
+
+    return reportsMap.entries.map((report) {
+      return Marker(
+        markerId: MarkerId(report.key),
+        position: LatLng(
+          report.value.lat,
+          report.value.lon,
+        ),
+        icon: _markerIcon,
+        infoWindow: InfoWindow(
+          title: '${ report.value.title} '
+              '\n ${ getDatetimeFromTimestamp(report.value.creationTimestamp) } '
+              '\n\n ${ ReportStatus.findByCode(report.value.status).description } ',
+          snippet: '[ ${ report.value.userName} | Precisión : ${ report.value.acc.round()}m ]',
+          //anchor: const Offset(5.0, 5.0),
           onTap: () {
-            logMsg('dashboard_screen', msg: 'Marker - onTab key: ${ report.key }');
-
-            if (viewModel.isLoading || viewModel.isSavingResponseData) return;
-
-            viewModel.fetchReportData(report.key);
-
-            setState(() {
-              _showReportCards = true;
-            });
+            logMsg('dashboard_screen', msg: 'InfoWindow - onTab : ${ report.key }');
           },
-        );
-        _markers.add(markerPivot);
-      }
-    }
+        ),
+        onTap: () => _onMarkerTap(report.key, viewModel),
+      );
+    }).toSet();
+  }
+
+  void _onMarkerTap(String reportId, ReportViewModel viewModel) {
+    logMsg('dashboard_screen', msg: '_onMarkerTapped - onTab key: $reportId');
+
+    if (viewModel.isLoading || viewModel.isSavingResponseData) return;
+
+    viewModel.fetchReportData(reportId); // fire and forget
+
+    setState(() {
+      _showReportCards = true;
+    });
   }
 
   /// Load a custom pin as a marker icon
@@ -351,8 +345,9 @@ class _DashboardPageState extends State<DashboardPage> {
     // Provider implementation : Consumer
     return Consumer<ReportViewModel>(
         builder: (context, viewModel, child) {
+
           // Load reports into markers
-          _updateMarkers(viewModel);
+          final Set<Marker> markers = _createMarkers(viewModel);
 
           return Scaffold(
             appBar: AppBar(
@@ -373,7 +368,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: GoogleMap(
                       mapType: MapType.normal,
                       myLocationEnabled: true,
-                      markers: _markers,
+                      markers: markers,
                       mapId: mapId,
                       initialCameraPosition: const CameraPosition(
                         target: latLngGuadalupe,

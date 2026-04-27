@@ -13,7 +13,7 @@ class ReportViewModel extends ChangeNotifier {
 
   final ReportRepository _reportRepository;
 
-  Map<String, Report> _reportMap = <String, Report> {};
+  Map<String, Report> _reportMap = <String, Report> { };
   UnmodifiableMapView<String, Report> get reportMap => UnmodifiableMapView(_reportMap);
 
   Report _currentReport = Report(id: empty);
