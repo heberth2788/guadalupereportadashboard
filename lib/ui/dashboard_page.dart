@@ -10,12 +10,11 @@ import 'package:guadalupereportadashboard/ui/report_view_model.dart';
 import 'package:guadalupereportadashboard/ui/shimmer_content.dart';
 import 'package:guadalupereportadashboard/util/constants.dart';
 import 'package:guadalupereportadashboard/util/util.dart';
-import 'package:intl/intl.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../util/report_status.dart';
+import 'package:guadalupereportadashboard/util/report_status.dart';
 import 'loading_overlay.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -182,16 +181,20 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Load a custom pin as a marker icon
   Future<void> _loadCustomMarker() async {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker');
+    // Optimization: Don't reload if we already have the custom icon
+    if (_markerIcon != BitmapDescriptor.defaultMarker) return;
+
     try {
+      // Ensure the widget is still mounted before proceeding with context-dependent calls
+      if (!mounted) return;
+
       final ImageConfiguration imgConfig = createLocalImageConfiguration(context, size: markerSize);
-      final BitmapDescriptor icon = await BitmapDescriptor.fromAssetImage(imgConfig, redPinAssetPath);
-      //final BitmapDescriptor icon = await BitmapDescriptor.asset(imgConfig, redPinAssetPath);
-      if (mounted) {
-        setState(() {
-          _markerIcon = icon;
-        });
-      }
-    } catch (_, stackTrace) { // TODO: , why does this catch body is always executed ?
+      final BitmapDescriptor icon = await BitmapDescriptor.asset(imgConfig, redPinAssetPath);
+
+      setState(() {
+        _markerIcon = icon;
+      });
+    } catch (e, stackTrace) {
       logMsg('dashboard_screen', msg: '_DashboardPageState > _loadCustomMarker > error : ${ stackTrace.toString() }');
     }
   }
@@ -329,7 +332,11 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _loadCustomMarker(); // fire and forget async method
+
+    // Delay execution until the first frame is rendered to ensure context is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCustomMarker(); // fire and forget async method
+    });
   }
 
   @override
@@ -367,8 +374,9 @@ class _DashboardPageState extends State<DashboardPage> {
                       mapType: MapType.normal,
                       myLocationEnabled: true,
                       markers: _markers,
+                      mapId: mapId,
                       initialCameraPosition: const CameraPosition(
-                        target: latLonGuadalupe,
+                        target: latLngGuadalupe,
                         zoom: zoomMapValue,
                       ),
                       gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{

@@ -39,7 +39,7 @@ dependencies:
   google_maps_flutter_web: ^0.6.1
 
   # Support for Google Maps
-  google_maps_flutter: ^2.5.3
+  google_maps_flutter: ^2.7.0
 
   # Support for internationalization. E.g: DateTime formating
   intl: ^0.20.2 # ^0.18.1 Version required for flutter_localizations
@@ -92,8 +92,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - images/guadalupereportadashboard.png
-    - images/pins/
+    - assets/images/guadalupereportadashboard.png
+    - assets/images/pins/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
