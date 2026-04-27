@@ -127,6 +127,7 @@ class ReportViewModel extends ChangeNotifier {
 
   Future<void> upsertAuthorityResponseMessage(String message) async {
     logMsg('report_view_model', msg: 'saveAuthorityResponseMessage');
+    _currentResponse.message = message;
     _isSavingResponseData = true;
     notifyListeners();
 

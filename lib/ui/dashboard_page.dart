@@ -131,10 +131,6 @@ class _DashboardPageState extends State<DashboardPage> {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _createMarkers');
     Map<String, Report> reportsMap = viewModel.reportMap;
 
-    // Set the response text field
-    // TODO: look into the best place to update the response text
-    _responseTextController.text = viewModel.currentResponse.message.trim();
-
     if (reportsMap.isEmpty) return { };
 
     return reportsMap.entries.map((report) {
@@ -348,6 +344,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
           // Load reports into markers
           final Set<Marker> markers = _createMarkers(viewModel);
+          // Set the response text field
+          _responseTextController.text = viewModel.currentResponse.message.trim();
 
           return Scaffold(
             appBar: AppBar(
@@ -632,7 +630,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ),
                                         ElevatedButton(
                                           style: buttonStyle,
-                                          onPressed: () => _cancelButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
+                                          onPressed: () => _cancelButtonPressed(viewModel),
                                           child: const Text(strCancel),
                                         ),
                                       ],
@@ -673,13 +671,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                         children: [
                                           ElevatedButton(
                                             style: buttonStyle,
-                                            onPressed: () => _inProgressButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
+                                            onPressed: () => _inProgressButtonPressed(viewModel),
                                             child: const Text(strInProgress),
                                           ),
                                           const Padding(padding: EdgeInsets.only(right: 9.0)),
                                           ElevatedButton(
                                             style: buttonStyle,
-                                            onPressed: () => _doneButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
+                                            onPressed: () => _doneButtonPressed(viewModel),
                                             child: const Text(strDone),
                                           ),
                                           const Spacer(),
@@ -687,7 +685,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             style: buttonStyle,
                                             onPressed:
                                             viewModel.isMaxPhotosReached ?
-                                                () => _uploadResponseImage(Provider.of<ReportViewModel>(context, listen: false))
+                                                () => _uploadResponseImage(viewModel)
                                                 : null,
                                             child: const Text(strPhoto),
                                           ),
@@ -719,7 +717,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         children: [
                                           ElevatedButton(
                                             style: buttonStyle,
-                                            onPressed: () => _saveResponseButtonPressed(Provider.of<ReportViewModel>(context, listen: false)),
+                                            onPressed: () => _saveResponseButtonPressed(viewModel),
                                             child: const Text(strSave),
                                           ),
                                         ]
