@@ -161,7 +161,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _onMarkerTap(String reportId, ReportViewModel viewModel) {
-    logMsg('dashboard_screen', msg: '_onMarkerTapped - onTab key: $reportId');
+    logMsg('dashboard_screen', msg: '_onMarkerTap - key: $reportId');
 
     if (viewModel.isLoading || viewModel.isSavingResponseData) return;
 
