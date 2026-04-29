@@ -33,8 +33,6 @@ const double zoomMapValue = 15.0;
 //region UI text constants
 const String strAppTitle = "Panel de reportes";
 const String strDates = 'Fechas :';
-const String strType = 'Tipo :';
-const String strStatus = 'Estado :';
 const String strResponse = 'Respuesta';
 const String strCancel = 'Anular';
 const String strInProgress = 'En progreso';

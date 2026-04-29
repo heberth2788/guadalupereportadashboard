@@ -4,9 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:guadalupereportadashboard/data/report_status.dart';
+import 'package:guadalupereportadashboard/data/report_type.dart';
 import 'package:guadalupereportadashboard/data/response.dart';
 import 'package:guadalupereportadashboard/util/util.dart';
-import 'package:guadalupereportadashboard/util/report_status.dart';
+import 'package:guadalupereportadashboard/util/report_status_enum.dart';
 
 class ReportRepository {
 
@@ -41,7 +43,7 @@ class ReportRepository {
   }
 
   /// Fetch all the reports from firebase database
-  /// Called every time  data is changed
+  /// Called every time data is changed
   void fetchAllReports(Function() notifyCallback) {
     logMsg('report_repository', msg: 'fetchAllReports');
     _fbDatabase.ref('/reports').onValue.listen((DatabaseEvent event) {
@@ -50,6 +52,7 @@ class ReportRepository {
 
       logMsg('report_repository', msg: 'fetchAllReports > onValue > event.snapshot.value');
       final data = event.snapshot.value as Map<dynamic, dynamic>;
+      
       _reportMap.clear();
       data.forEach((key, value) {
         _reportMap[key] = Report.fromMap(key, value as Map<dynamic, dynamic>);
@@ -60,7 +63,7 @@ class ReportRepository {
 
   /// Update the status of the report.
   /// Possible status codes: Reported = 0, InProgress = 1, Done = 2, canceled = 666
-  Future<void> updateReportStatus(String userId, String reportId, String date, ReportStatus status) async {
+  Future<void> updateReportStatus(String userId, String reportId, String date, ReportStatusEnum status) async {
     logMsg('report_repository', msg: 'updateReportStatus');
 
     final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
@@ -70,15 +73,15 @@ class ReportRepository {
     updates['/day-users-reports/$date/$userId/$reportId/status'] = status.code;
     updates['/user-reports/$userId/$reportId/status'] = status.code;
 
-    if (status == ReportStatus.inProgress) {
+    if (status == ReportStatusEnum.inProgress) {
       updates['/reports/$reportId/inProgressTimestamp'] = currentTimestamp;
       updates['/day-users-reports/$date/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
       updates['/user-reports/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
-    } else if (status == ReportStatus.done) {
+    } else if (status == ReportStatusEnum.done) {
       updates['/reports/$reportId/doneTimestamp'] = currentTimestamp;
       updates['/day-users-reports/$date/$userId/$reportId/doneTimestamp'] = currentTimestamp;
       updates['/user-reports/$userId/$reportId/doneTimestamp'] = currentTimestamp;
-    } else if (status == ReportStatus.canceled) {
+    } else if (status == ReportStatusEnum.canceled) {
       updates['/reports/$reportId/canceledTimestamp'] = currentTimestamp;
       updates['/day-users-reports/$date/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
       updates['/user-reports/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
@@ -119,6 +122,24 @@ class ReportRepository {
     if (data == null) return Response(userId: userId, reportId: reportId);
 
     return Response.fromMap(userId, reportId, data);
+  }
+
+  /// Fetch the `report status` from firebase database
+  /// Called every time `report status` data is changed
+  Stream<ReportStatus> fetchReportStatusStream() {
+    logMsg('report_repository', msg: 'fetchReportStatusStream');
+    return _fbDatabase.ref('/report-status').onValue.map((event) {
+      return ReportStatus.fromMap(event.snapshot.value as Map<dynamic, dynamic>);
+    });
+  }
+
+  /// Fetch the `report type` from firebase database
+  /// Called every time `report type` data is changed
+  Stream<ReportType> fetchReportTypeStream() {
+    logMsg('report_repository', msg: 'fetchReportTypeStream');
+    return _fbDatabase.ref('/report-type').onValue.map((event) {
+      return ReportType.fromMap(event.snapshot.value as Map<dynamic, dynamic>);
+    });
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////

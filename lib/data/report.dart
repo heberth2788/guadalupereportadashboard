@@ -1,5 +1,5 @@
 import '../util/util.dart';
-import '../util/report_status.dart';
+import '../util/report_status_enum.dart';
 
 class Report {
 
@@ -58,15 +58,15 @@ class Report {
   }
 
   String getStatusDateTime() {
-    final reportStatus = ReportStatus.findByCode(status);
+    final reportStatus = ReportStatusEnum.findByCode(status);
 
-    if (reportStatus == ReportStatus.created) {
+    if (reportStatus == ReportStatusEnum.created) {
       return getDatetimeFromTimestamp(creationTimestamp);
-    } else if (reportStatus == ReportStatus.inProgress) {
+    } else if (reportStatus == ReportStatusEnum.inProgress) {
       return getDatetimeFromTimestamp(inProgressTimestamp);
-    } else if (reportStatus == ReportStatus.done) {
+    } else if (reportStatus == ReportStatusEnum.done) {
       return getDatetimeFromTimestamp(doneTimestamp);
-    } else if (reportStatus == ReportStatus.canceled) {
+    } else if (reportStatus == ReportStatusEnum.canceled) {
       return getDatetimeFromTimestamp(canceledTimestamp);
     }
 

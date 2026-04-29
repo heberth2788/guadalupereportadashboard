@@ -4,9 +4,10 @@ import 'package:guadalupereportadashboard/util/util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
 import 'package:guadalupereportadashboard/data/report_repository.dart';
-import 'package:guadalupereportadashboard/util/report_status.dart';
-
-import '../data/response.dart';
+import 'package:guadalupereportadashboard/util/report_status_enum.dart';
+import 'package:guadalupereportadashboard/data/report_status.dart';
+import 'package:guadalupereportadashboard/data/report_type.dart';
+import 'package:guadalupereportadashboard/data/response.dart';
 
 /// Provider implementation : ChangeNotifier(Observable)
 class ReportViewModel extends ChangeNotifier {
@@ -28,6 +29,22 @@ class ReportViewModel extends ChangeNotifier {
   List<String> _currentResponsePhotos = [];
   UnmodifiableListView<String> get currentResponsePhotos => UnmodifiableListView(_currentResponsePhotos);
 
+  /// To manage Report's Status dropdown button list
+  ReportStatus _reportStatus = ReportStatus(title: empty, description: empty, values: []);
+  ReportStatus get reportStatus => _reportStatus;
+
+  /// Selected Report's Status from dropdown button list
+  Status _selectedStatus = Status(id: 0, name: empty, description: empty, visible: true);
+  Status get selectedStatus => _selectedStatus;
+
+  /// To manage Report's Type dropdown button list
+  ReportType _reportType = ReportType(title: empty, description: empty, values: []);
+  ReportType get reportType => _reportType;
+
+  /// Selected Report's Type from dropdown button list
+  Type _selectedType = Type(id: 0, name: empty, description: empty, visible: true);
+  Type get selectedType => _selectedType;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -43,7 +60,32 @@ class ReportViewModel extends ChangeNotifier {
     ReportRepository? repository,
   }): _reportRepository = repository ?? ReportRepository() {
     logMsg('report_view_model', msg: 'ReportViewModel');
+
     _reportRepository.fetchAllReports(_notifyReportsUpdate);
+
+    _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
+      logMsg('report_view_model', msg: 'fetchReportStatusStream');
+      _reportStatus = status;
+      _selectedStatus = status.values.first;
+      notifyListeners();
+    });
+
+    _reportRepository.fetchReportTypeStream().listen((ReportType type) {
+      logMsg('report_view_model', msg: 'fetchReportTypeStream');
+      _reportType = type;
+      _selectedType = type.values.first;
+      notifyListeners();
+    });
+  }
+
+  void onChangeReportStatus(String? newReportStatus) {
+    _selectedStatus = _reportStatus.values.where((Status status) => status.name == newReportStatus).first;
+    notifyListeners();
+  }
+
+  void onChangeReportType(String? newReportType) {
+    _selectedType = _reportType.values.where((Type type) => type.name == newReportType).first;
+    notifyListeners();
   }
 
   Future<void> fetchReportData(String reportId) async {
@@ -150,7 +192,7 @@ class ReportViewModel extends ChangeNotifier {
       String userId,
       String reportId,
       String date,
-      ReportStatus status,
+      ReportStatusEnum status,
   ) async {
     logMsg('report_view_model', msg: 'updateReportStatus $status');
     _isSavingResponseData = true;

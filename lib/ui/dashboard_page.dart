@@ -14,7 +14,9 @@ import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:guadalupereportadashboard/util/report_status.dart';
+import 'package:guadalupereportadashboard/util/report_status_enum.dart';
+import 'package:guadalupereportadashboard/data/report_status.dart';
+import 'package:guadalupereportadashboard/data/report_type.dart';
 import 'loading_overlay.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -87,42 +89,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  /// To manage Report's Type dropdown button list
-  static const List<String> _reportTypeList = <String>[
-    'Todo',
-    'Pista o vereda en mal estado',
-    'Basura y/o desmonte en la calle',
-    'Arbol por podar',
-    'Infraestructura o pared peligrosa',
-    'Abandono o maltrato animal',
-    'Buzón peligroso',
-  ];
-  String _selectedReportType = _reportTypeList.first;
-  void _onChangeReportType(String? newReportType) {
-    if (newReportType != null) {
-      setState(() {
-        _selectedReportType = newReportType;
-      });
-    }
-  }
-
-  /// To manage Report's Status dropdown button list
-  static const List<String> _reportStatusList = <String>[
-    'Todo',
-    'Reportado',
-    'En progreso',
-    'Atendido',
-    'Anulado',
-  ];
-  String _selectedReportStatus = _reportStatusList.first;
-  void _onChangeReportStatus(String? newReportStatus) {
-    if (newReportStatus != null) {
-      setState(() {
-        _selectedReportStatus = newReportStatus;
-      });
-    }
-  }
-
   /// Custom marker icons
   final Set<BitmapDescriptor> _markerIcons = { BitmapDescriptor.defaultMarker };
 
@@ -135,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return reportsMap.entries.map((report) {
 
-      ReportStatus reportStatus = ReportStatus.findByCode(report.value.status);
+      ReportStatusEnum reportStatus = ReportStatusEnum.findByCode(report.value.status);
       BitmapDescriptor markerIcon = _findPinIcon(reportStatus);
 
       return Marker(
@@ -172,12 +138,12 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  BitmapDescriptor _findPinIcon(ReportStatus reportStatus) {
+  BitmapDescriptor _findPinIcon(ReportStatusEnum reportStatus) {
     return switch(reportStatus) {
-      ReportStatus.created => _markerIcons.elementAt(0),
-      ReportStatus.inProgress => _markerIcons.elementAt(1),
-      ReportStatus.done => _markerIcons.elementAt(2),
-      ReportStatus.canceled => _markerIcons.elementAt(3),
+      ReportStatusEnum.created => _markerIcons.elementAt(0),
+      ReportStatusEnum.inProgress => _markerIcons.elementAt(1),
+      ReportStatusEnum.done => _markerIcons.elementAt(2),
+      ReportStatusEnum.canceled => _markerIcons.elementAt(3),
     };
   }
 
@@ -268,37 +234,37 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Canceled = 666
   void _cancelButtonPressed(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_cancelButtonPressed ${ viewModel.currentReport.id }');
-    if (viewModel.currentReport.status == ReportStatus.canceled.code) return;
+    if (viewModel.currentReport.status == ReportStatusEnum.canceled.code) return;
 
     final String userId = viewModel.currentReport.userId;
     final String reportId = viewModel.currentReport.id;
     final String date = getDateFromTimestamp(viewModel.currentReport.creationTimestamp);
 
-    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.canceled); // fire and forget
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatusEnum.canceled); // fire and forget
   }
 
   /// InProgress = 1
   void _inProgressButtonPressed(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_inProgressButtonPressed ${ viewModel.currentReport.id }');
-    if (viewModel.currentReport.status == ReportStatus.inProgress.code) return;
+    if (viewModel.currentReport.status == ReportStatusEnum.inProgress.code) return;
 
     final String userId = viewModel.currentReport.userId;
     final String reportId = viewModel.currentReport.id;
     final String date = getDateFromTimestamp(viewModel.currentReport.creationTimestamp);
 
-    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.inProgress); // fire and forget
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatusEnum.inProgress); // fire and forget
   }
 
   /// Done = 2
   void _doneButtonPressed(ReportViewModel viewModel) {
     logMsg('dashboard_screen', msg: '_doneButtonPressed ${ viewModel.currentReport.id }');
-    if (viewModel.currentReport.status == ReportStatus.done.code) return;
+    if (viewModel.currentReport.status == ReportStatusEnum.done.code) return;
 
     final String userId = viewModel.currentReport.userId;
     final String reportId = viewModel.currentReport.id;
     final String date = getDateFromTimestamp(viewModel.currentReport.creationTimestamp);
 
-    viewModel.updateReportStatus(userId, reportId, date, ReportStatus.done); // fire and forget
+    viewModel.updateReportStatus(userId, reportId, date, ReportStatusEnum.done); // fire and forget
   }
 
   Future<void> _uploadResponseImage(ReportViewModel viewModel) async {
@@ -479,7 +445,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     Expanded(
                                       flex: 3,
                                       child: Text(
-                                        strType,
+                                        viewModel.reportType.title,
                                         style: Theme.of(context).textTheme.titleSmall,
                                       ),
                                     ),
@@ -488,23 +454,23 @@ class _DashboardPageState extends State<DashboardPage> {
                                       child:
                                       DropdownButton(
                                         isExpanded: true,
-                                        value: _selectedReportType,
+                                        value: viewModel.selectedType.name,
                                         onChanged: (viewModel.isLoading ||
-                                            viewModel.isSavingResponseData) ? null : (String? value) {
-                                          _onChangeReportType(value);
+                                          viewModel.isSavingResponseData) ? null : (String? newType) {
+                                          viewModel.onChangeReportType(newType);
                                         },
-                                        items: _reportTypeList
-                                            .map<DropdownMenuItem<String>>(
-                                                (String value) {
-                                              return DropdownMenuItem(
-                                                value: value,
-                                                child: Text(
-                                                  value,
-                                                  style: Theme.of(context).textTheme.labelLarge,
-                                                ),
-                                              );
-                                            }
-                                        ).toList(),
+                                        items: viewModel.reportType.values
+                                          .map<DropdownMenuItem<String>>(
+                                              (Type type) {
+                                                return DropdownMenuItem(
+                                                  value: type.name,
+                                                  child: Text(
+                                                    type.name,
+                                                    style: Theme.of(context).textTheme.labelLarge,
+                                                  ),
+                                                );
+                                              }
+                                          ).toList(),
                                       ),
                                     ),
                                   ],
@@ -515,7 +481,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     Expanded(
                                       flex: 3,
                                       child: Text(
-                                        strStatus,
+                                        viewModel.reportStatus.title,
                                         style: Theme.of(context).textTheme.titleSmall,
                                       ),
                                     ),
@@ -523,22 +489,23 @@ class _DashboardPageState extends State<DashboardPage> {
                                       flex: 7,
                                       child: DropdownButton(
                                         isExpanded: true,
-                                        value: _selectedReportStatus,
+                                        value: viewModel.selectedStatus.name,
                                         onChanged: (viewModel.isLoading ||
-                                            viewModel.isSavingResponseData) ? null : (String? value) {
-                                          _onChangeReportStatus(value);
+                                          viewModel.isSavingResponseData) ? null : (String? newStatus) {
+                                          viewModel.onChangeReportStatus(newStatus);
                                         },
-                                        items: _reportStatusList
+                                        items: viewModel.reportStatus.values
                                             .map<DropdownMenuItem<String>>(
-                                                (String value) {
-                                              return DropdownMenuItem(
-                                                value: value,
-                                                child: Text(
-                                                  value,
-                                                  style: Theme.of(context).textTheme.labelLarge,
-                                                ),
-                                              );
-                                            }).toList(),
+                                              (Status status) {
+                                                return DropdownMenuItem(
+                                                  value: status.name,
+                                                  child: Text(
+                                                    status.name,
+                                                    style: Theme.of(context).textTheme.labelLarge,
+                                                  ),
+                                                );
+                                              }
+                                            ).toList(),
                                       ),
                                     ),
                                   ],
@@ -579,7 +546,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Expanded(
                                         flex: 3,
                                         child: Text(
-                                          ReportStatus.findByCode(viewModel.currentReport.status).description,
+                                          ReportStatusEnum.findByCode(viewModel.currentReport.status).description,
                                           style: reportStatusTextStyle,
                                           textAlign: TextAlign.end,
                                         ),

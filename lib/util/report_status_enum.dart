@@ -1,4 +1,4 @@
-enum ReportStatus {
+enum ReportStatusEnum {
 
   created(0, "REPORTADO"),
   inProgress(1, "EN PROGRESO"),
@@ -8,14 +8,14 @@ enum ReportStatus {
   final int code;
   final String description;
 
-  const ReportStatus(this.code, this.description);
+  const ReportStatusEnum(this.code, this.description);
 
-  static ReportStatus findByCode(int? code) {
-    for (var status in ReportStatus.values) {
+  static ReportStatusEnum findByCode(int? code) {
+    for (var status in ReportStatusEnum.values) {
       if (status.code == code) {
         return status;
       }
     }
-    return ReportStatus.canceled;
+    return ReportStatusEnum.canceled;
   }
 }
