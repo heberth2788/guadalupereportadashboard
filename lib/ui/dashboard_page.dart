@@ -55,37 +55,32 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// To manage the Date filters state: From
-  DateTime _selectedDateFrom = DateTime.now().subtract(const Duration(days: rangeDays));
-
-  Future<void> _onPressedDatePickerFrom(BuildContext context) async {
-    final DateTime? dateTimePicket = await showDatePicker(
-      context: context,
-      firstDate: DateTime(startingYear),
-      lastDate: DateTime.now(), //DateTime(2999),
-      initialDate: _selectedDateFrom,
-    );
-    if (dateTimePicket != null && dateTimePicket != _selectedDateFrom) {
-      setState(() {
-        _selectedDateFrom = dateTimePicket;
-        logMsg('_DashboardPageState',  msg: '_onPressedDatePickerFrom > $_selectedDateFrom');
-      });
-    }
-  }
-
-  /// To manage the Date filters state: To
-  DateTime _selectedDateTo = DateTime.now();
-  Future<void> _onPressedDatePickerTo(BuildContext context) async {
+  Future<void> _onPressedDatePickerFrom(BuildContext context, DateTime dateFrom, Function(DateTime) onChangeDateFrom) async {
     final DateTime? dateTimePicket = await showDatePicker(
       context: context,
       firstDate: DateTime(startingYear),
       lastDate: DateTime.now(),
-      initialDate: _selectedDateTo,
+      initialDate: dateFrom,
     );
-    if (dateTimePicket != null && dateTimePicket != _selectedDateTo) {
-      setState(() {
-        _selectedDateTo = dateTimePicket;
-        logMsg('dashboard_screen', msg: '_DashboardPageState > _onPressedDatePickerTo : $_selectedDateTo');
-      });
+    if (dateTimePicket != null &&
+        getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateFrom)
+    ) {
+      onChangeDateFrom(dateTimePicket);
+    }
+  }
+
+  /// To manage the Date filters state: To
+  Future<void> _onPressedDatePickerTo(BuildContext context, DateTime dateTo, Function(DateTime) onChangeDateTo) async {
+    final DateTime? dateTimePicket = await showDatePicker(
+      context: context,
+      firstDate: DateTime(startingYear),
+      lastDate: DateTime.now(),
+      initialDate: dateTo,
+    );
+    if (dateTimePicket != null &&
+        getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateTo)
+    ) {
+      onChangeDateTo(dateTimePicket);
     }
   }
 
@@ -385,7 +380,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Expanded(
                                         flex: 2,
                                         child: Text(
-                                          strDates,
+                                          strRange,
                                           style: Theme.of(context).textTheme.titleSmall,
                                         ),
                                       ),
@@ -394,16 +389,20 @@ class _DashboardPageState extends State<DashboardPage> {
                                         child: ElevatedButton(
                                             onPressed: () {
                                               if (!viewModel.isLoading &&
-                                                  !viewModel.isSavingResponseData) {
-                                                _onPressedDatePickerFrom(context);
+                                                  !viewModel.isSavingResponseData
+                                              ) {
+                                                _onPressedDatePickerFrom(
+                                                    context,
+                                                    viewModel.dateFrom,
+                                                    viewModel.onChangeDateFrom,
+                                                );
                                               }
                                             } ,
                                             child: Row(
                                               children: [
                                                 Expanded(
-                                                  child: Text(getDateFromDateTime(_selectedDateFrom)),
+                                                  child: Text(getDateFromDateTime(viewModel.dateFrom)),
                                                 ),
-                                                //const Icon(Icons.date_range),
                                               ],
                                             )),
                                       ),
@@ -413,16 +412,20 @@ class _DashboardPageState extends State<DashboardPage> {
                                         child: ElevatedButton(
                                             onPressed: () {
                                               if (!viewModel.isLoading &&
-                                                  !viewModel.isSavingResponseData) {
-                                                _onPressedDatePickerTo(context);
+                                                  !viewModel.isSavingResponseData
+                                              ) {
+                                                _onPressedDatePickerTo(
+                                                    context,
+                                                    viewModel.dateTo,
+                                                    viewModel.onChangeDateTo,
+                                                );
                                               }
                                             },
                                             child: Row(
                                               children: [
                                                 Expanded(
-                                                  child: Text(getDateFromDateTime(_selectedDateTo)),
+                                                  child: Text(getDateFromDateTime(viewModel.dateTo)),
                                                 ),
-                                                //const Icon(Icons.date_range),
                                               ],
                                             )
                                         ),

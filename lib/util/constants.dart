@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 //region General constants
-const int startingYear = 2023;
+const int startingYear = 2026;
 const int rangeDays = 63;
 const int maxAllowedResponsePhotos = 3; // Maximum number of response photos allowed
 const double rightPanelWidth = 500.0;
@@ -32,7 +32,7 @@ const double zoomMapValue = 15.0;
 
 //region UI text constants
 const String strAppTitle = "Panel de reportes";
-const String strDates = 'Fechas :';
+const String strRange = 'Rango :';
 const String strReportsQuantity = 'Cantidad de reportes :';
 const String strResponse = 'Respuesta';
 const String strCancel = 'Anular';

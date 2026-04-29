@@ -29,6 +29,14 @@ class ReportViewModel extends ChangeNotifier {
   List<String> _currentResponsePhotos = [];
   UnmodifiableListView<String> get currentResponsePhotos => UnmodifiableListView(_currentResponsePhotos);
 
+  //region States for date filters: DateFrom and DateTo
+  DateTime _dateFrom = DateTime.now().subtract(const Duration(days: rangeDays));
+  DateTime get dateFrom => _dateFrom;
+
+  DateTime _dateTo = DateTime.now();
+  DateTime get dateTo => _dateTo;
+  //endregion
+
   /// To manage Report's Status dropdown button list
   ReportStatus _reportStatus = ReportStatus(title: empty, description: empty, values: []);
   ReportStatus get reportStatus => _reportStatus;
@@ -94,6 +102,16 @@ class ReportViewModel extends ChangeNotifier {
 
   void onChangeReportType(String? newReportType) {
     _selectedType = _reportType.values.where((Type type) => type.name == newReportType).first;
+    notifyListeners();
+  }
+
+  void onChangeDateFrom(DateTime newDateFrom) {
+    _dateFrom = newDateFrom;
+    notifyListeners();
+  }
+
+  void onChangeDateTo(DateTime newDateTo) {
+    _dateTo = newDateTo;
     notifyListeners();
   }
 
