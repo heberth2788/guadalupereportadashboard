@@ -82,7 +82,7 @@ class ReportViewModel extends ChangeNotifier {
       logMsg('report_view_model', msg: 'fetchReportTypeStream');
       _reportType = type;
       _selectedType = type.values.first;
-      
+
       notifyListeners();
     });
   }
@@ -103,7 +103,7 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 1));
 
     // Set the current report
     _currentReport = _reportMap[reportId] ?? Report(id: empty);
@@ -154,6 +154,9 @@ class ReportViewModel extends ChangeNotifier {
     _isImageUploadProcessFinished = false;
     notifyListeners();
 
+    // TODO: remove this delay (Added for testing purposes)
+    await Future.delayed(Duration(seconds: 1));
+
     final String imageName = '${ DateTime.now().millisecondsSinceEpoch }.$fileExtension';
     final String urlResponsePhoto = await _reportRepository.uploadResponseImage(imageBytes, imageName, userId, reportId);
     if (urlResponsePhoto.isNotEmpty) {
@@ -174,7 +177,7 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 1));
 
     await _reportRepository.saveResponseMessage(
       _currentReport.userId,
@@ -199,7 +202,7 @@ class ReportViewModel extends ChangeNotifier {
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 1));
 
     await _reportRepository.updateReportStatus(userId, reportId, date, status);
 

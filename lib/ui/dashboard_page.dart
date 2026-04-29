@@ -514,6 +514,34 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                           ),
                         ),
+                        // Quantity of reports
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(9.0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
+                                      child: Text(
+                                        strReportsQuantity,
+                                        style: Theme.of(context).textTheme.titleSmall,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 6,
+                                      child: Text(
+                                        viewModel.reportMap.length.toString(),
+                                        style: Theme.of(context).textTheme.titleSmall,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                         // Shimmer if full state is loading
                         if (viewModel.isLoading) ShimmerContent(width: rightPanelWidth),
                         // Selected user report card
@@ -740,9 +768,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     leading: const Icon(Icons.logout),
                     title: const Text(strLogout),
                     onTap: () {
-                      //setState(() {
                       _onItemDrawerTapped(1);
-                      //});
                       FirebaseAuth.instance.signOut();
                       Navigator.pop(context);
                       SignedOutAction((context) {
