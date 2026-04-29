@@ -45,6 +45,7 @@ class ReportViewModel extends ChangeNotifier {
   Type _selectedType = Type(id: 0, name: empty, description: empty, visible: true);
   Type get selectedType => _selectedType;
 
+  /// To manage general loading state
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -61,12 +62,19 @@ class ReportViewModel extends ChangeNotifier {
   }): _reportRepository = repository ?? ReportRepository() {
     logMsg('report_view_model', msg: 'ReportViewModel');
 
-    _reportRepository.fetchAllReports(_notifyReportsUpdate);
+    _reportRepository.fetchAllReports().listen((Map<String, Report> reportMap) {
+      logMsg('report_view_model', msg: 'fetchAllReports');
+      _reportMap = reportMap;
+      _currentReport = _reportMap[_currentReport.id] ?? Report(id: empty);
+
+      notifyListeners();
+    });
 
     _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
       logMsg('report_view_model', msg: 'fetchReportStatusStream');
       _reportStatus = status;
       _selectedStatus = status.values.first;
+
       notifyListeners();
     });
 
@@ -74,6 +82,7 @@ class ReportViewModel extends ChangeNotifier {
       logMsg('report_view_model', msg: 'fetchReportTypeStream');
       _reportType = type;
       _selectedType = type.values.first;
+      
       notifyListeners();
     });
   }
@@ -129,15 +138,6 @@ class ReportViewModel extends ChangeNotifier {
       _currentReportPhotos = [];
       _currentResponsePhotos = [];
     }
-  }
-
-  void _notifyReportsUpdate() {
-    logMsg('report_view_model', msg: '_notifyReportsUpdate');
-    _reportMap = _reportRepository.reportMap;
-    final Report report = _reportMap[_currentReport.id] ?? Report(id: empty);
-    _currentReport = report;
-
-    notifyListeners();
   }
 
   /*void fetchReportsByDateRange() {

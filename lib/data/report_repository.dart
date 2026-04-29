@@ -15,11 +15,6 @@ class ReportRepository {
   final FirebaseDatabase _fbDatabase = FirebaseDatabase.instance;
   final FirebaseStorage _fbStorage = FirebaseStorage.instance;
 
-  /// Declare private varible with '_'
-  final Map<String, Report> _reportMap = { };
-  /// Declare get method for the private variable
-  Map<String, Report> get reportMap => _reportMap;
-
   ///////////////////////////////////////////////////////////////////////////////////////
   /// Methods for Firebase Realtime Database
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -44,20 +39,18 @@ class ReportRepository {
 
   /// Fetch all the reports from firebase database
   /// Called every time data is changed
-  void fetchAllReports(Function() notifyCallback) {
+  Stream<Map<String, Report>> fetchAllReports() {
     logMsg('report_repository', msg: 'fetchAllReports');
-    _fbDatabase.ref('/reports').onValue.listen((DatabaseEvent event) {
-      logMsg('report_repository', msg: 'fetchAllReports > onValue');
-      if (!event.snapshot.exists) return;
+    return _fbDatabase.ref('/reports').onValue.map((DatabaseEvent event) {
 
-      logMsg('report_repository', msg: 'fetchAllReports > onValue > event.snapshot.value');
-      final data = event.snapshot.value as Map<dynamic, dynamic>;
-      
-      _reportMap.clear();
+      final data = event.snapshot.value as Map<dynamic, dynamic>? ?? { };
+      final Map<String, Report> reportMap = { };
+
       data.forEach((key, value) {
-        _reportMap[key] = Report.fromMap(key, value as Map<dynamic, dynamic>);
+        reportMap[key] = Report.fromMap(key, value as Map<dynamic, dynamic>);
       });
-      notifyCallback();
+
+      return reportMap;
     });
   }
 
@@ -128,7 +121,7 @@ class ReportRepository {
   /// Called every time `report status` data is changed
   Stream<ReportStatus> fetchReportStatusStream() {
     logMsg('report_repository', msg: 'fetchReportStatusStream');
-    return _fbDatabase.ref('/report-status').onValue.map((event) {
+    return _fbDatabase.ref('/report-status').onValue.map((DatabaseEvent event) {
       return ReportStatus.fromMap(event.snapshot.value as Map<dynamic, dynamic>);
     });
   }
@@ -137,7 +130,7 @@ class ReportRepository {
   /// Called every time `report type` data is changed
   Stream<ReportType> fetchReportTypeStream() {
     logMsg('report_repository', msg: 'fetchReportTypeStream');
-    return _fbDatabase.ref('/report-type').onValue.map((event) {
+    return _fbDatabase.ref('/report-type').onValue.map((DatabaseEvent event) {
       return ReportType.fromMap(event.snapshot.value as Map<dynamic, dynamic>);
     });
   }
