@@ -57,9 +57,6 @@ class ReportViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  bool _isImageUploadProcessFinished = true;
-  bool get isImageUploadProcessFinished => _isImageUploadProcessFinished;
-
   bool _isSavingResponseData = false;
   bool get isSavingResponseData => _isSavingResponseData;
 
@@ -165,26 +162,52 @@ class ReportViewModel extends ChangeNotifier {
   Future<void> uploadResponseImage(
       Uint8List imageBytes,
       String fileExtension,
-      String userId,
-      String reportId,
   ) async {
     logMsg('report_view_model', msg: 'uploadResponsePhoto');
-    _isImageUploadProcessFinished = false;
+    _isSavingResponseData = true;
     notifyListeners();
 
     // TODO: remove this delay (Added for testing purposes)
     await Future.delayed(Duration(seconds: 1));
 
     final String imageName = '${ DateTime.now().millisecondsSinceEpoch }.$fileExtension';
-    final String urlResponsePhoto = await _reportRepository.uploadResponseImage(imageBytes, imageName, userId, reportId);
-    if (urlResponsePhoto.isNotEmpty) {
+    final String publicUrlImage = await _reportRepository.uploadResponseImage(
+      currentReport.userId,
+      currentReport.id,
+      imageBytes,
+      imageName,
+    );
+
+    if (publicUrlImage.isNotEmpty) {
       logMsg('report_view_model', msg: 'uploadResponsePhoto > complete');
-      _currentResponsePhotos.add(urlResponsePhoto);
+      _currentResponsePhotos.add(publicUrlImage);
     } else {
       logMsg('report_view_model', msg: 'uploadResponsePhoto > failed');
     }
 
-    _isImageUploadProcessFinished = true;
+    _isSavingResponseData = false;
+    notifyListeners();
+  }
+
+  Future<void> deleteResponseImage(String publicImageUrl) async {
+    logMsg('report_view_model', msg: 'deleteResponseImage');
+    _isSavingResponseData = true;
+    notifyListeners();
+
+    // TODO: remove this delay (Added for testing purposes)
+    await Future.delayed(Duration(seconds: 1));
+
+    final decodedImageUrl = Uri.decodeFull(publicImageUrl);
+    String imageName = decodedImageUrl.split('/').last.split('?').first;
+
+    await _reportRepository.deleteResponseImage(
+        currentReport.userId,
+        currentReport.id,
+        imageName,
+    );
+    _currentResponsePhotos.remove(publicImageUrl);
+
+    _isSavingResponseData = false;
     notifyListeners();
   }
 

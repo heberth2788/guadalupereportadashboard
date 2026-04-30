@@ -170,13 +170,15 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Generate the widget of the photos of the selected report
   List<Widget> _generatePhotoWidgets(
       List<String> photosUrlList,
-      { bool showRemoveButton = false }
+      { bool showRemoveButton = false,
+        Future<void> Function(String)? deleteImage }
   ) {
     logMsg('dashboard_screen', msg: '_DashboardPageState > _generatePhotoWidgets: ${ photosUrlList.length }');
+
     List<Widget> listOfWidgets = [];
     int flexValue = photosUrlList.length;
 
-    for (var photoUrlPivot in photosUrlList) {
+    for (String photoUrlPivot in photosUrlList) {
       listOfWidgets.add(
           Expanded(
               flex: flexValue,
@@ -197,7 +199,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 )
                             ),
                             onTap: () {
-                              launchUrl(Uri.parse(photoUrlPivot.toString()));
+                              launchUrl(Uri.parse(photoUrlPivot));
                             }
                         ),
                         Positioned(
@@ -211,7 +213,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                   color: Theme.of(context).colorScheme.error,
                                 ),
                                 onPressed: () {
-                                  logMsg('dashboard_screen', msg: 'delete image button pressed ${ photoUrlPivot.toString() }');
+                                  logMsg('dashboard_screen', msg: 'delete image button pressed $photoUrlPivot');
+                                  deleteImage?.call(photoUrlPivot); // fire and forget
                                 }
                             ),
                           ) : Container(),
@@ -284,7 +287,10 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     // Upload the image to firebase storage
-    viewModel.uploadResponseImage(fileBytes, fileExtension, viewModel.currentReport.userId, viewModel.currentReport.id);
+    viewModel.uploadResponseImage(
+      fileBytes,
+      fileExtension,
+    );
   }
 
   void _saveResponseButtonPressed(ReportViewModel viewModel) {
@@ -365,7 +371,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 SizedBox(
                   width: rightPanelWidth,
                   child: Padding(
-                    padding: const EdgeInsets.all(13.0),
+                    padding: const EdgeInsets.all(3.0),
                     child: Column(
                       children: [
                         // Filters : Date From, Date To
@@ -654,30 +660,19 @@ class _DashboardPageState extends State<DashboardPage> {
                                     // Photos of the response
                                     Stack(
                                         children: [
-                                          const Padding(
-                                            padding: EdgeInsets.only(top: 3.0),
-                                            //child: Center(child: CircularProgressIndicator()),
-                                          ),
+                                          const Padding(padding: EdgeInsets.only(top: 3.0)),
                                           Visibility(
                                               visible: true,
                                               child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                  children: _generatePhotoWidgets(viewModel.currentResponsePhotos, showRemoveButton: true)
+                                                  children: _generatePhotoWidgets(
+                                                    viewModel.currentResponsePhotos,
+                                                    showRemoveButton: true,
+                                                    deleteImage: viewModel.deleteResponseImage,
+                                                  )
                                               )
                                           ),
                                         ]
-                                    ),
-                                    const Padding(padding: EdgeInsets.only(top: 9.0)),
-                                    // Upload image progress indicator
-                                    Visibility(
-                                      visible: !viewModel.isImageUploadProcessFinished,
-                                      child: LinearProgressIndicator(
-                                        value: viewModel.isImageUploadProcessFinished ? 1.0 : null,
-                                        backgroundColor: Colors.grey,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          viewModel.isImageUploadProcessFinished ? Colors.green : Theme.of(context).colorScheme.primary,
-                                        ),
-                                      ),
                                     ),
                                     const Padding(padding: EdgeInsets.only(top: 9.0)),
                                     // InProgress, Done and Photo buttons

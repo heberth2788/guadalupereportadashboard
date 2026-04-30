@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:guadalupereportadashboard/data/report.dart';
@@ -181,25 +180,41 @@ class ReportRepository {
 
   /// Upload an image file to firebase storage for a specific user and report
   Future<String> uploadResponseImage(
-    Uint8List imageBytes, 
-    String imageName, 
-    String userId, 
+    String userId,
     String reportId,
+    Uint8List imageBytes, 
+    String imageName,
   ) async {
     logMsg('report_repository', msg: 'uploadResponseImage');
 
-    late String publicUrlPhoto;
-    final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
+    late String publicUrlImage;
+    final Reference rImage = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
 
     try {
-      await rPhotos.putData(imageBytes);
-      publicUrlPhoto = await rPhotos.getDownloadURL();
+      await rImage.putData(imageBytes);
+      publicUrlImage = await rImage.getDownloadURL();
     } on FirebaseException catch (e) {
       logMsg('report_repository', msg: 'uploadResponseImage > error : $e');
-      publicUrlPhoto = "";
+      publicUrlImage = "";
       // e.g, e.code == 'canceled'
     }
-    return publicUrlPhoto;
+    return publicUrlImage;
+  }
+
+  Future<void> deleteResponseImage(
+      String userId,
+      String reportId,
+      String imageName,
+  ) async {
+    logMsg('report_repository', msg: 'deleteResponseImage');
+
+    final Reference rImage = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
+
+    try {
+      await rImage.delete();
+    } on FirebaseException catch (e) {
+      logMsg('report_repository', msg: 'deleteResponseImage > error : $e');
+    }
   }
 
   // Generic helper for fetching images
