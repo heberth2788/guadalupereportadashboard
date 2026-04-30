@@ -10,6 +10,13 @@ const double shimmerHeight = 630.0;
 const String empty = '';
 //endregion
 
+//region Report status constants
+const int reportStatusCreatedId = 2;
+const int reportStatusInProgressId = 3;
+const int reportStatusDoneId = 4;
+const int reportStatusCanceledId = 666;
+//endregion
+
 //region Styling constants
 const Color seedColor = Color.fromRGBO(60, 105, 27, 0); // Const for material theme
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 13));

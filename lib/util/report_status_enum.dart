@@ -1,9 +1,11 @@
+import 'constants.dart';
+
 enum ReportStatusEnum {
 
-  created(0, "REPORTADO"),
-  inProgress(1, "EN PROGRESO"),
-  done(2, "ATENDIDO"),
-  canceled(666, "ANULADO");
+  created(reportStatusCreatedId, "REPORTADO"),
+  inProgress(reportStatusInProgressId, "EN PROGRESO"),
+  done(reportStatusDoneId, "ATENDIDO"),
+  canceled(reportStatusCanceledId, "ANULADO");
 
   final int code;
   final String description;
