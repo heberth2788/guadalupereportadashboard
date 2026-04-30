@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'package:guadalupereportadashboard/util/constants.dart';
 import 'package:guadalupereportadashboard/util/util.dart';
@@ -62,34 +63,44 @@ class ReportViewModel extends ChangeNotifier {
 
   bool get isMaxPhotosReached => _currentResponsePhotos.length < maxAllowedResponsePhotos;
 
+  //region Stream subscriptions list
+  final List<StreamSubscription> _subscriptions = [];
+  //endregion
+
   ReportViewModel({
     ReportRepository? repository,
   }): _reportRepository = repository ?? ReportRepository() {
     logMsg('report_view_model', msg: 'ReportViewModel');
 
-    _reportRepository.fetchAllReports().listen((Map<String, Report> reportMap) {
-      logMsg('report_view_model', msg: 'fetchAllReports');
-      _reportMap = reportMap;
-      _currentReport = _reportMap[_currentReport.id] ?? Report(id: empty);
+    _subscriptions.add(
+      _reportRepository.fetchAllReports().listen((Map<String, Report> reportMap) {
+        logMsg('report_view_model', msg: 'fetchAllReports');
+        _reportMap = reportMap;
+        _currentReport = _reportMap[_currentReport.id] ?? Report(id: empty);
 
-      notifyListeners();
-    });
+        notifyListeners();
+      })
+    );
 
-    _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
-      logMsg('report_view_model', msg: 'fetchReportStatusStream');
-      _reportStatus = status;
-      _selectedStatus = status.values.first;
+    _subscriptions.add(
+      _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
+        logMsg('report_view_model', msg: 'fetchReportStatusStream');
+        _reportStatus = status;
+        _selectedStatus = status.values.first;
 
-      notifyListeners();
-    });
+        notifyListeners();
+      })
+    );
 
-    _reportRepository.fetchReportTypeStream().listen((ReportType type) {
-      logMsg('report_view_model', msg: 'fetchReportTypeStream');
-      _reportType = type;
-      _selectedType = type.values.first;
+    _subscriptions.add(
+      _reportRepository.fetchReportTypeStream().listen((ReportType type) {
+        logMsg('report_view_model', msg: 'fetchReportTypeStream');
+        _reportType = type;
+        _selectedType = type.values.first;
 
-      notifyListeners();
-    });
+        notifyListeners();
+      })
+    );
   }
 
   void onChangeReportStatus(String? newReportStatus) {
@@ -249,5 +260,15 @@ class ReportViewModel extends ChangeNotifier {
 
     _isSavingResponseData = false;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    logMsg('report_view_model', msg: 'dispose');
+
+    // Cancel subscriptions to prevent memory leaks
+    for (var subscription in _subscriptions) { subscription.cancel(); }
+
+    super.dispose();
   }
 }

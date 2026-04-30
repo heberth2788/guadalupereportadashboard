@@ -178,7 +178,7 @@ class _DashboardPageState extends State<DashboardPage> {
     List<Widget> listOfWidgets = [];
     int flexValue = photosUrlList.length;
 
-    for (String photoUrlPivot in photosUrlList) {
+    for (var photoUrlPivot in photosUrlList) {
       listOfWidgets.add(
           Expanded(
               flex: flexValue,
