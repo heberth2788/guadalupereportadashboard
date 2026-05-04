@@ -20,27 +20,21 @@ class ReportRepository {
 
   /// Fetch the report by date range(From - To)
   /// Called every time  data is changed
-  void fetchReportByDateRange(String dateFrom, String dateTo, Function() notifyCallback) {
-    
-    logMsg('report_repository', msg: 'fetchReportByDateRange > $dateFrom - $dateTo');
+  Stream<Map<String, Report>> fetchReports(
+    { required int timestampFrom,
+      required int timestampTo }
+      //String reportType,
+      //String reportState,
+  ) {
+    logMsg('report_repository', msg: 'fetchReports > ${ getDatetimeFromTimestamp(timestampFrom) } - ${ getDatetimeFromTimestamp(timestampTo) }');
 
-      DatabaseReference dfReports = _fbDatabase.ref('/day-users-reports');
-      Query query = dfReports.orderByKey().startAt(dateFrom).endAt(dateTo);
-      query.onValue.listen((DatabaseEvent event) {
-        for (final DataSnapshot reportChild in event.snapshot.children) {
-          final key = reportChild.key?.toString() ?? '';
-          final userId = reportChild.child('userId').value?.toString() ?? '';
-          final userName = reportChild.child('userName').value?.toString() ?? '';
-          logMsg('report_repository', msg: '$key - $userName - $userId');
-        }
-      });
-  }
+    DatabaseReference dfReports = _fbDatabase.ref('/reports');
+    Query query = dfReports
+        .orderByChild('creationTimestamp')
+        .startAt(timestampFrom)
+        .endAt(timestampTo);
 
-  /// Fetch all the reports from firebase database
-  /// Called every time data is changed
-  Stream<Map<String, Report>> fetchAllReports() {
-    logMsg('report_repository', msg: 'fetchAllReports');
-    return _fbDatabase.ref('/reports').onValue.map((DatabaseEvent event) {
+    return query.onValue.map((DatabaseEvent event) {
 
       final data = event.snapshot.value as Map<dynamic, dynamic>? ?? { };
       final Map<String, Report> reportMap = { };
@@ -62,20 +56,16 @@ class ReportRepository {
     final Map<String, int> updates = { };
 
     updates['/reports/$reportId/status'] = status.code;
-    updates['/day-users-reports/$date/$userId/$reportId/status'] = status.code;
     updates['/user-reports/$userId/$reportId/status'] = status.code;
 
     if (status == ReportStatusEnum.inProgress) {
       updates['/reports/$reportId/inProgressTimestamp'] = currentTimestamp;
-      updates['/day-users-reports/$date/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
       updates['/user-reports/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
     } else if (status == ReportStatusEnum.done) {
       updates['/reports/$reportId/doneTimestamp'] = currentTimestamp;
-      updates['/day-users-reports/$date/$userId/$reportId/doneTimestamp'] = currentTimestamp;
       updates['/user-reports/$userId/$reportId/doneTimestamp'] = currentTimestamp;
     } else if (status == ReportStatusEnum.canceled) {
       updates['/reports/$reportId/canceledTimestamp'] = currentTimestamp;
-      updates['/day-users-reports/$date/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
       updates['/user-reports/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
     }
 

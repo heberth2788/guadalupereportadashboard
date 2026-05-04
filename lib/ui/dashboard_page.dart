@@ -58,14 +58,14 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _onPressedDatePickerFrom(BuildContext context, DateTime dateFrom, Function(DateTime) onChangeDateFrom) async {
     final DateTime? dateTimePicket = await showDatePicker(
       context: context,
-      firstDate: DateTime(startingYear),
-      lastDate: DateTime.now(),
+      firstDate: getDateTimeAtStartOfDay(DateTime(startingYear)),
+      lastDate: getDateTimeAtEndOfDay(DateTime.now()),
       initialDate: dateFrom,
     );
     if (dateTimePicket != null &&
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateFrom)
     ) {
-      onChangeDateFrom(dateTimePicket);
+      onChangeDateFrom(getDateTimeAtStartOfDay(dateTimePicket));
     }
   }
 
@@ -73,14 +73,14 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _onPressedDatePickerTo(BuildContext context, DateTime dateTo, Function(DateTime) onChangeDateTo) async {
     final DateTime? dateTimePicket = await showDatePicker(
       context: context,
-      firstDate: DateTime(startingYear),
-      lastDate: DateTime.now(),
+      firstDate: getDateTimeAtStartOfDay(DateTime(startingYear)),
+      lastDate: getDateTimeAtEndOfDay(DateTime.now()),
       initialDate: dateTo,
     );
     if (dateTimePicket != null &&
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateTo)
     ) {
-      onChangeDateTo(dateTimePicket);
+      onChangeDateTo(getDateTimeAtEndOfDay(dateTimePicket));
     }
   }
 
@@ -309,7 +309,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Delay execution until the first frame is rendered to ensure context is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadCustomMarkers(); // fire and forget async method
+      _loadCustomMarkers(); // fire and forget
     });
   }
 

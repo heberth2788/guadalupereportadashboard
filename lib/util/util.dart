@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 /// Parse a timestamp to a human readable string format.
@@ -29,3 +30,12 @@ String _getCurrentTime() {
   var now = DateTime.now();
   return DateFormat('hh:mm:ss').format(now);
 }
+
+DateTime getDateTimeAtStartOfDay(DateTime datetime) => DateUtils.dateOnly(datetime);
+
+DateTime getDateTimeAtEndOfDay(DateTime datetime) => DateTime(
+  datetime.year,
+  datetime.month,
+  datetime.day,
+  23, 59, 59, 999, 999
+);

@@ -31,10 +31,10 @@ class ReportViewModel extends ChangeNotifier {
   UnmodifiableListView<String> get currentResponsePhotos => UnmodifiableListView(_currentResponsePhotos);
 
   //region States for date filters: DateFrom and DateTo
-  DateTime _dateFrom = DateTime.now().subtract(const Duration(days: rangeDays));
+  DateTime _dateFrom = getDateTimeAtStartOfDay(DateTime.now().subtract(const Duration(days: rangeDays)));
   DateTime get dateFrom => _dateFrom;
 
-  DateTime _dateTo = DateTime.now();
+  DateTime _dateTo = getDateTimeAtEndOfDay(DateTime.now());
   DateTime get dateTo => _dateTo;
   //endregion
 
@@ -65,6 +65,7 @@ class ReportViewModel extends ChangeNotifier {
 
   //region Stream subscriptions list
   final List<StreamSubscription> _subscriptions = [];
+  StreamSubscription? _reportsSubscription;
   //endregion
 
   ReportViewModel({
@@ -72,15 +73,7 @@ class ReportViewModel extends ChangeNotifier {
   }): _reportRepository = repository ?? ReportRepository() {
     logMsg('report_view_model', msg: 'ReportViewModel');
 
-    _subscriptions.add(
-      _reportRepository.fetchAllReports().listen((Map<String, Report> reportMap) {
-        logMsg('report_view_model', msg: 'fetchAllReports');
-        _reportMap = reportMap;
-        _currentReport = _reportMap[_currentReport.id] ?? Report(id: empty);
-
-        notifyListeners();
-      })
-    );
+    _updateReportStream();
 
     _subscriptions.add(
       _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
@@ -103,6 +96,22 @@ class ReportViewModel extends ChangeNotifier {
     );
   }
 
+  void _updateReportStream() {
+    logMsg('report_view_model', msg: '_updateReportStream');
+    _reportsSubscription?.cancel();
+
+    _reportsSubscription = _reportRepository.fetchReports(
+      timestampFrom: _dateFrom.millisecondsSinceEpoch,
+      timestampTo: _dateTo.millisecondsSinceEpoch,
+    ).listen((Map<String, Report> reportMap) {
+      logMsg('report_view_model', msg: 'fetchReports listen');
+      _reportMap = reportMap;
+      _currentReport = _reportMap[_currentReport.id] ?? Report(id: empty);
+
+      notifyListeners();
+    });
+  }
+
   void onChangeReportStatus(String? newReportStatus) {
     _selectedStatus = _reportStatus.values.where((Status status) => status.name == newReportStatus).first;
     notifyListeners();
@@ -114,13 +123,15 @@ class ReportViewModel extends ChangeNotifier {
   }
 
   void onChangeDateFrom(DateTime newDateFrom) {
+    logMsg('report_view_model', msg: 'onChangeDateFrom');
     _dateFrom = newDateFrom;
-    notifyListeners();
+    _updateReportStream();
   }
 
   void onChangeDateTo(DateTime newDateTo) {
+    logMsg('report_view_model', msg: 'onChangeDateTo');
     _dateTo = newDateTo;
-    notifyListeners();
+    _updateReportStream();
   }
 
   Future<void> fetchReportData(String reportId) async {
@@ -267,6 +278,7 @@ class ReportViewModel extends ChangeNotifier {
     logMsg('report_view_model', msg: 'dispose');
 
     // Cancel subscriptions to prevent memory leaks
+    _reportsSubscription?.cancel();
     for (var subscription in _subscriptions) { subscription.cancel(); }
 
     super.dispose();
