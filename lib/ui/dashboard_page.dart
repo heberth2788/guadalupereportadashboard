@@ -55,7 +55,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   /// To manage the Date filters state: From
-  Future<void> _onPressedDatePickerFrom(BuildContext context, DateTime dateFrom, Function(DateTime) onChangeDateFrom) async {
+  Future<void> _onPressedDatePickerFrom(
+    BuildContext context,
+    DateTime dateFrom,
+    Function(DateTime) onChangeDateFrom,
+  ) async {
     final DateTime? dateTimePicket = await showDatePicker(
       context: context,
       firstDate: getDateTimeAtStartOfDay(DateTime(startingYear)),
@@ -66,11 +70,18 @@ class _DashboardPageState extends State<DashboardPage> {
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateFrom)
     ) {
       onChangeDateFrom(getDateTimeAtStartOfDay(dateTimePicket));
+      setState(() {
+        _showReportCards = false;
+      });
     }
   }
 
   /// To manage the Date filters state: To
-  Future<void> _onPressedDatePickerTo(BuildContext context, DateTime dateTo, Function(DateTime) onChangeDateTo) async {
+  Future<void> _onPressedDatePickerTo(
+    BuildContext context,
+    DateTime dateTo,
+    Function(DateTime) onChangeDateTo,
+  ) async {
     final DateTime? dateTimePicket = await showDatePicker(
       context: context,
       firstDate: getDateTimeAtStartOfDay(DateTime(startingYear)),
@@ -81,6 +92,9 @@ class _DashboardPageState extends State<DashboardPage> {
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateTo)
     ) {
       onChangeDateTo(getDateTimeAtEndOfDay(dateTimePicket));
+      setState(() {
+        _showReportCards = false;
+      });
     }
   }
 

@@ -73,8 +73,6 @@ class ReportViewModel extends ChangeNotifier {
   }): _reportRepository = repository ?? ReportRepository() {
     logMsg('report_view_model', msg: 'ReportViewModel');
 
-    _updateReportStream();
-
     _subscriptions.add(
       _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
         logMsg('report_view_model', msg: 'fetchReportStatusStream');
@@ -94,6 +92,8 @@ class ReportViewModel extends ChangeNotifier {
         notifyListeners();
       })
     );
+
+    _updateReportStream();
   }
 
   void _updateReportStream() {
@@ -101,8 +101,8 @@ class ReportViewModel extends ChangeNotifier {
     _reportsSubscription?.cancel();
 
     _reportsSubscription = _reportRepository.fetchReports(
-      timestampFrom: _dateFrom.millisecondsSinceEpoch,
-      timestampTo: _dateTo.millisecondsSinceEpoch,
+      _dateFrom.millisecondsSinceEpoch,
+      _dateTo.millisecondsSinceEpoch,
     ).listen((Map<String, Report> reportMap) {
       logMsg('report_view_model', msg: 'fetchReports listen');
       _reportMap = reportMap;

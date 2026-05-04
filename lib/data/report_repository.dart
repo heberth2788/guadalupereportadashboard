@@ -21,10 +21,10 @@ class ReportRepository {
   /// Fetch the report by date range(From - To)
   /// Called every time  data is changed
   Stream<Map<String, Report>> fetchReports(
-    { required int timestampFrom,
-      required int timestampTo }
-      //String reportType,
-      //String reportState,
+    int timestampFrom,
+    int timestampTo,
+    //String reportType,
+    //String reportState,
   ) {
     logMsg('report_repository', msg: 'fetchReports > ${ getDatetimeFromTimestamp(timestampFrom) } - ${ getDatetimeFromTimestamp(timestampTo) }');
 
