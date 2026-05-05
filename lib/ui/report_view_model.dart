@@ -101,11 +101,22 @@ class ReportViewModel extends ChangeNotifier {
     _reportsSubscription?.cancel();
 
     _reportsSubscription = _reportRepository.fetchReports(
-      _dateFrom.millisecondsSinceEpoch,
-      _dateTo.millisecondsSinceEpoch,
-    ).listen((Map<String, Report> reportMap) {
-      logMsg('report_view_model', msg: 'fetchReports listen');
-      _reportMap = reportMap;
+      _dateFrom,
+      _dateTo,
+    ).listen((Map<String, Report> reports) {
+      logMsg('report_view_model', msg: 'fetchReports listen id: ${ _selectedStatus.id }');
+
+      // If the status is uninitialized(0) or all(1), show all reports
+      if (_selectedStatus.id == 0 || _selectedStatus.id == 1) {
+        _reportMap = reports;
+      } else { // Otherwise, filter the reports by status
+        _reportMap = Map.fromEntries(
+            reports.entries.where((MapEntry<String, Report> entry) {
+              final Report report = entry.value;
+              return report.status == _selectedStatus.id; // TODO: Add report type filter
+            })
+        );
+      }
       _currentReport = _reportMap[_currentReport.id] ?? Report(id: empty);
 
       notifyListeners();
@@ -113,13 +124,15 @@ class ReportViewModel extends ChangeNotifier {
   }
 
   void onChangeReportStatus(String? newReportStatus) {
+    logMsg('report_view_model', msg: 'onChangeReportStatus');
     _selectedStatus = _reportStatus.values.where((Status status) => status.name == newReportStatus).first;
-    notifyListeners();
+    _updateReportStream();
   }
 
   void onChangeReportType(String? newReportType) {
+    logMsg('report_view_model', msg: 'onChangeReportType');
     _selectedType = _reportType.values.where((Type type) => type.name == newReportType).first;
-    notifyListeners();
+    _updateReportStream();
   }
 
   void onChangeDateFrom(DateTime newDateFrom) {
@@ -176,10 +189,6 @@ class ReportViewModel extends ChangeNotifier {
       _currentResponsePhotos = [];
     }
   }
-
-  /*void fetchReportsByDateRange() {
-    _reportRepository.fetchReportByDateRange('', '', _reportNotification);
-  }*/
 
   Future<void> uploadResponseImage(
       Uint8List imageBytes,

@@ -69,10 +69,10 @@ class _DashboardPageState extends State<DashboardPage> {
     if (dateTimePicket != null &&
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateFrom)
     ) {
-      onChangeDateFrom(getDateTimeAtStartOfDay(dateTimePicket));
       setState(() {
         _showReportCards = false;
       });
+      onChangeDateFrom(getDateTimeAtStartOfDay(dateTimePicket));
     }
   }
 
@@ -91,10 +91,10 @@ class _DashboardPageState extends State<DashboardPage> {
     if (dateTimePicket != null &&
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateTo)
     ) {
-      onChangeDateTo(getDateTimeAtEndOfDay(dateTimePicket));
       setState(() {
         _showReportCards = false;
       });
+      onChangeDateTo(getDateTimeAtEndOfDay(dateTimePicket));
     }
   }
 
@@ -480,6 +480,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                         value: viewModel.selectedType.name,
                                         onChanged: (viewModel.isLoading ||
                                           viewModel.isSavingResponseData) ? null : (String? newType) {
+                                          if (newType == null) return;
+                                          setState(() {
+                                            _showReportCards = false;
+                                          });
                                           viewModel.onChangeReportType(newType);
                                         },
                                         items: viewModel.reportType.values
@@ -515,6 +519,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                         value: viewModel.selectedStatus.name,
                                         onChanged: (viewModel.isLoading ||
                                           viewModel.isSavingResponseData) ? null : (String? newStatus) {
+                                          if (newStatus == null) return;
+                                          setState(() {
+                                            _showReportCards = false;
+                                          });
                                           viewModel.onChangeReportStatus(newStatus);
                                         },
                                         items: viewModel.reportStatus.values

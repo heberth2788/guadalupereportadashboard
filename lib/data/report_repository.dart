@@ -21,11 +21,12 @@ class ReportRepository {
   /// Fetch the report by date range(From - To)
   /// Called every time  data is changed
   Stream<Map<String, Report>> fetchReports(
-    int timestampFrom,
-    int timestampTo,
-    //String reportType,
-    //String reportState,
+    DateTime dateTimeFrom,
+    DateTime dateTimeTo,
   ) {
+    final int timestampFrom = dateTimeFrom.millisecondsSinceEpoch;
+    final int timestampTo = dateTimeTo.millisecondsSinceEpoch;
+
     logMsg('report_repository', msg: 'fetchReports > ${ getDatetimeFromTimestamp(timestampFrom) } - ${ getDatetimeFromTimestamp(timestampTo) }');
 
     DatabaseReference dfReports = _fbDatabase.ref('/reports');
@@ -35,14 +36,11 @@ class ReportRepository {
         .endAt(timestampTo);
 
     return query.onValue.map((DatabaseEvent event) {
-
       final data = event.snapshot.value as Map<dynamic, dynamic>? ?? { };
       final Map<String, Report> reportMap = { };
-
       data.forEach((key, value) {
         reportMap[key] = Report.fromMap(key, value as Map<dynamic, dynamic>);
       });
-
       return reportMap;
     });
   }
