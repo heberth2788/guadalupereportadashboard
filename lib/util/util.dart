@@ -31,8 +31,10 @@ String _getCurrentTime() {
   return DateFormat('hh:mm:ss').format(now);
 }
 
+/// Return the DateTime with time at 00:00:00 (start day)
 DateTime getDateTimeAtStartOfDay(DateTime datetime) => DateUtils.dateOnly(datetime);
 
+/// Return the DateTime with time at 23:59:59 (end day)
 DateTime getDateTimeAtEndOfDay(DateTime datetime) => DateTime(
   datetime.year,
   datetime.month,
