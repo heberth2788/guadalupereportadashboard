@@ -37,9 +37,6 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Controller for the response text field
   final TextEditingController _responseTextController = TextEditingController();
 
-  /// Show or hide the report cards (Report and Response)
-  bool _showReportCards = false;
-
   /// To manage Google Maps state
   late GoogleMapController _gmController;
   void _onMapCreated(GoogleMapController controller) {
@@ -69,9 +66,6 @@ class _DashboardPageState extends State<DashboardPage> {
     if (dateTimePicket != null &&
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateFrom)
     ) {
-      setState(() {
-        _showReportCards = false;
-      });
       onChangeDateFrom(getDateTimeAtStartOfDay(dateTimePicket));
     }
   }
@@ -91,9 +85,6 @@ class _DashboardPageState extends State<DashboardPage> {
     if (dateTimePicket != null &&
         getDateFromDateTime(dateTimePicket) != getDateFromDateTime(dateTo)
     ) {
-      setState(() {
-        _showReportCards = false;
-      });
       onChangeDateTo(getDateTimeAtEndOfDay(dateTimePicket));
     }
   }
@@ -141,10 +132,6 @@ class _DashboardPageState extends State<DashboardPage> {
     if (viewModel.isLoading || viewModel.isSavingResponseData) return;
 
     viewModel.fetchReportData(reportId); // fire and forget
-
-    setState(() {
-      _showReportCards = true;
-    });
   }
 
   BitmapDescriptor _findPinIcon(ReportStatusEnum reportStatus) {
@@ -327,12 +314,6 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  @override
-  void dispose() {
-    _responseTextController.dispose();
-    super.dispose();
-  }
-
   /// Home dashboard widget building
   @override
   Widget build(BuildContext context) {
@@ -481,10 +462,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         onChanged: (viewModel.isLoading ||
                                           viewModel.isSavingResponseData) ? null : (String? newType) {
                                           if (newType == null) return;
-                                          setState(() {
-                                            _showReportCards = false;
-                                          });
-                                          viewModel.onChangeReportType(newType);
+                                          viewModel.onChangeReportTypeFilter(newType);
                                         },
                                         items: viewModel.reportType.values
                                           .map<DropdownMenuItem<String>>(
@@ -520,10 +498,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                         onChanged: (viewModel.isLoading ||
                                           viewModel.isSavingResponseData) ? null : (String? newStatus) {
                                           if (newStatus == null) return;
-                                          setState(() {
-                                            _showReportCards = false;
-                                          });
-                                          viewModel.onChangeReportStatus(newStatus);
+                                          viewModel.onChangeReportStatusFilter(newStatus);
                                         },
                                         items: viewModel.reportStatus.values
                                             .map<DropdownMenuItem<String>>(
@@ -577,7 +552,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         if (viewModel.isLoading) ShimmerContent(width: rightPanelWidth),
                         // Selected user report card
                         Visibility(
-                          visible: _showReportCards && !viewModel.isLoading,
+                          visible: viewModel.showReportCards && !viewModel.isLoading,
                           child: Card(
                             child: Padding(
                               padding: const EdgeInsets.all(9.0),
@@ -653,7 +628,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         // Selected authority response card
                         Visibility(
-                          visible: _showReportCards && !viewModel.isLoading,
+                          visible: viewModel.showReportCards && !viewModel.isLoading,
                           child: LoadingOverlay(
                             isLoading: viewModel.isSavingResponseData,
                             child: Card(
@@ -802,5 +777,11 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
     );
+  }
+
+  @override
+  void dispose() {
+    _responseTextController.dispose();
+    super.dispose();
   }
 }

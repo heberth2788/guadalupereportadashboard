@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 //region General constants
 const int startingYear = 2026;
 const int rangeDays = 63;
-const int maxAllowedResponsePhotos = 3; // Maximum number of response photos allowed
+const int maxResponsePhotosAllowed = 3; // Maximum number of response photos allowed
 const double rightPanelWidth = 500.0;
 const double shimmerHeight = 630.0;
 const String empty = '';

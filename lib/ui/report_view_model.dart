@@ -54,14 +54,20 @@ class ReportViewModel extends ChangeNotifier {
   Type _selectedType = Type(id: 0, name: empty, description: empty, visible: true);
   Type get selectedType => _selectedType;
 
-  /// To manage general loading state
+  /// To show shimmer for report and response cards
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  /// To show loading when saving response data
   bool _isSavingResponseData = false;
   bool get isSavingResponseData => _isSavingResponseData;
 
-  bool get isMaxPhotosReached => _currentResponsePhotos.length < maxAllowedResponsePhotos;
+  /// To allow uploading more photos or not
+  bool get isMaxPhotosReached => _currentResponsePhotos.length < maxResponsePhotosAllowed;
+
+  /// To show or hide report and response cards
+  bool _showReportCards = false;
+  bool get showReportCards => _showReportCards;
 
   //region Stream subscriptions list
   final List<StreamSubscription> _subscriptions = [];
@@ -123,27 +129,31 @@ class ReportViewModel extends ChangeNotifier {
     });
   }
 
-  void onChangeReportStatus(String? newReportStatus) {
+  void onChangeReportStatusFilter(String? newReportStatus) {
     logMsg('report_view_model', msg: 'onChangeReportStatus');
     _selectedStatus = _reportStatus.values.where((Status status) => status.name == newReportStatus).first;
+    _showReportCards = false;
     _updateReportStream();
   }
 
-  void onChangeReportType(String? newReportType) {
+  void onChangeReportTypeFilter(String? newReportType) {
     logMsg('report_view_model', msg: 'onChangeReportType');
     _selectedType = _reportType.values.where((Type type) => type.name == newReportType).first;
+    _showReportCards = false;
     _updateReportStream();
   }
 
   void onChangeDateFrom(DateTime newDateFrom) {
     logMsg('report_view_model', msg: 'onChangeDateFrom');
     _dateFrom = newDateFrom;
+    _showReportCards = false;
     _updateReportStream();
   }
 
   void onChangeDateTo(DateTime newDateTo) {
     logMsg('report_view_model', msg: 'onChangeDateTo');
     _dateTo = newDateTo;
+    _showReportCards = false;
     _updateReportStream();
   }
 
@@ -163,6 +173,7 @@ class ReportViewModel extends ChangeNotifier {
       _getPhotos(), // Get the photos of the selected report
     ]);
 
+    _showReportCards = true;
     _isLoading = false;
     notifyListeners();
   }
@@ -170,7 +181,6 @@ class ReportViewModel extends ChangeNotifier {
   Future<void> _fetchResponse() async {
     logMsg('report_view_model', msg: '_fetchResponse');
     _currentResponse = await _reportRepository.fetchResponse(_currentReport.userId, _currentReport.id);
-    logMsg('report_view_model', msg: '_fetchResponse > ${ _currentResponse.message }');
   }
 
   Future<void> _getPhotos() async {
@@ -278,6 +288,10 @@ class ReportViewModel extends ChangeNotifier {
 
     await _reportRepository.updateReportStatus(userId, reportId, date, status);
 
+    // If the selected status filter is neither uninitialized(0) not all(1), hide report cards
+    if (_selectedStatus.id != 0 && _selectedStatus.id != 1) {
+      _showReportCards = false;
+    }
     _isSavingResponseData = false;
     notifyListeners();
   }
