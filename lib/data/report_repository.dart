@@ -47,27 +47,36 @@ class ReportRepository {
 
   /// Update the status of the report.
   /// Possible status codes: Reported = 0, InProgress = 1, Done = 2, canceled = 666
-  Future<void> updateReportStatus(String userId, String reportId, String date, ReportStatusEnum status) async {
+  Future<void> updateReportStatus(
+      String userId,
+      String reportId,
+      String date,
+      ReportStatusEnum status,
+    ) async {
     logMsg('report_repository', msg: 'updateReportStatus');
 
-    final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    final Map<String, int> updates = { };
+    try {
+      final int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+      final Map<String, int> updates = { };
 
-    updates['/reports/$reportId/status'] = status.code;
-    updates['/user-reports/$userId/$reportId/status'] = status.code;
+      updates['/reports/$reportId/status'] = status.code;
+      updates['/user-reports/$userId/$reportId/status'] = status.code;
 
-    if (status == ReportStatusEnum.inProgress) {
-      updates['/reports/$reportId/inProgressTimestamp'] = currentTimestamp;
-      updates['/user-reports/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
-    } else if (status == ReportStatusEnum.done) {
-      updates['/reports/$reportId/doneTimestamp'] = currentTimestamp;
-      updates['/user-reports/$userId/$reportId/doneTimestamp'] = currentTimestamp;
-    } else if (status == ReportStatusEnum.canceled) {
-      updates['/reports/$reportId/canceledTimestamp'] = currentTimestamp;
-      updates['/user-reports/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
+      if (status == ReportStatusEnum.inProgress) {
+        updates['/reports/$reportId/inProgressTimestamp'] = currentTimestamp;
+        updates['/user-reports/$userId/$reportId/inProgressTimestamp'] = currentTimestamp;
+      } else if (status == ReportStatusEnum.done) {
+        updates['/reports/$reportId/doneTimestamp'] = currentTimestamp;
+        updates['/user-reports/$userId/$reportId/doneTimestamp'] = currentTimestamp;
+      } else if (status == ReportStatusEnum.canceled) {
+        updates['/reports/$reportId/canceledTimestamp'] = currentTimestamp;
+        updates['/user-reports/$userId/$reportId/canceledTimestamp'] = currentTimestamp;
+      }
+
+      _fbDatabase.ref().update(updates);
+    } catch(error) {
+      logMsg('report_repository', msg: "updateReportStatus > $error");
     }
-
-    return _fbDatabase.ref().update(updates);
   }
 
   /// Save the response message to firebase database for a specific user and report
@@ -79,35 +88,50 @@ class ReportRepository {
       String authorityName,
   ) async {
     logMsg('report_repository', msg: 'saveResponseMessage');
-    final DatabaseReference dfResponses = _fbDatabase.ref('/responses/$userId/$reportId');
-    final int creationTimestamp = DateTime.now().millisecondsSinceEpoch;
 
-    final String authId = authorityId.isEmpty ? FirebaseAuth.instance.currentUser?.uid ?? '' : authorityId;
-    final String authName = authorityName.isEmpty ? FirebaseAuth.instance.currentUser?.displayName ?? '' : authorityName;
+    try {
+      final DatabaseReference dfResponses = _fbDatabase.ref('/responses/$userId/$reportId');
+      final int creationTimestamp = DateTime.now().millisecondsSinceEpoch;
 
-    await dfResponses.set({
-      'message': message,
-      'authorityId': authId,
-      'authorityName': authName,
-      'creationTimestamp': creationTimestamp,
-      'visible': true,
-    });
+      final String authId = authorityId.isEmpty ? FirebaseAuth.instance.currentUser?.uid ?? '' : authorityId;
+      final String authName = authorityName.isEmpty ? FirebaseAuth.instance.currentUser?.displayName ?? '' : authorityName;
+
+      await dfResponses.set({
+        'message': message,
+        'authorityId': authId,
+        'authorityName': authName,
+        'creationTimestamp': creationTimestamp,
+        'visible': true,
+      });
+    } catch(error) {
+      logMsg('report_repository', msg: 'saveResponseMessage > $error');
+    }
   }
 
   Future<Response> fetchResponse(String userId, String reportId) async {
     logMsg('report_repository', msg: 'fetchResponse userId: $userId , reportId: $reportId');
-    final DatabaseEvent event = await _fbDatabase.ref('/responses/$userId/$reportId').once(DatabaseEventType.value);
-    final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
-    if (data == null) return Response(userId: userId, reportId: reportId);
+    Response response = Response(userId: userId, reportId: reportId);
+    try {
+      final DatabaseEvent event = await _fbDatabase
+          .ref('/responses/$userId/$reportId')
+          .once(DatabaseEventType.value);
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
-    return Response.fromMap(userId, reportId, data);
+      if (data != null) {
+        response = Response.fromMap(userId, reportId, data);
+      }
+    } catch(error) {
+      logMsg('report_repository', msg: 'fetchResponse > $error');
+    }
+    return response;
   }
 
   /// Fetch the `report status` from firebase database
   /// Called every time `report status` data is changed
   Stream<ReportStatus> fetchReportStatusStream() {
     logMsg('report_repository', msg: 'fetchReportStatusStream');
+
     return _fbDatabase.ref('/report-status').onValue.map((DatabaseEvent event) {
       return ReportStatus.fromMap(event.snapshot.value as Map<dynamic, dynamic>);
     });
@@ -117,6 +141,7 @@ class ReportRepository {
   /// Called every time `report type` data is changed
   Stream<ReportType> fetchReportTypeStream() {
     logMsg('report_repository', msg: 'fetchReportTypeStream');
+    
     return _fbDatabase.ref('/report-type').onValue.map((DatabaseEvent event) {
       return ReportType.fromMap(event.snapshot.value as Map<dynamic, dynamic>);
     });
@@ -127,42 +152,54 @@ class ReportRepository {
   ///////////////////////////////////////////////////////////////////////////////////////
   
   /// Fetch the images from the report of a specific used and report
-  Future<List<String>> fetchReportImagesFromUserAndReport(String userId, String reportId) async {
-
+  Future<List<String>> fetchReportImagesFromUserAndReport(
+      String userId,
+      String reportId,
+  ) async {
     logMsg('report_repository', msg: 'fetchReportImagesFromUserAndReport');
-    
-    final Reference rPhotos = _fbStorage.ref('/user-reports-photos/$userId/$reportId');
 
-    final ListResult photosList = await rPhotos.listAll();
-    //print('fetchImagesFromReport quantity : ${ photosList.items.length }');
     List<String> photosUrlList = [];
-    String pivot;
-    for(Reference photoRef in photosList.items) {
-      pivot = await photoRef.getDownloadURL();      
-      photosUrlList.add(pivot);
-      //print('fetchImagesFromReport : B : ${ photosUrlList.length }');
+    try {
+      final Reference rPhotos = _fbStorage.ref('/user-reports-photos/$userId/$reportId');
+      final ListResult photosList = await rPhotos.listAll();
+      //print('fetchImagesFromReport quantity : ${ photosList.items.length }');
+
+      String pivot;
+      for(Reference photoRef in photosList.items) {
+        pivot = await photoRef.getDownloadURL();
+        photosUrlList.add(pivot);
+        //print('fetchImagesFromReport : B : ${ photosUrlList.length }');
+      }
+      //print('fetchImagesFromReport : C : ${ photosUrlList.length }');
+    } catch(error) {
+      logMsg('report_repository', msg: 'fetchReportImagesFromUserAndReport > $error');
     }
-    //print('fetchImagesFromReport : C : ${ photosUrlList.length }');
     return photosUrlList;
   }
 
   /// Fetch the images from the response of a specific used and report
-  Future<List<String>> fetchResponseImagesFromUserAndReport(String userId, String reportId) async {
-
+  Future<List<String>> fetchResponseImagesFromUserAndReport(
+      String userId,
+      String reportId,
+  ) async {
     logMsg('report_repository', msg: 'fetchResponseImagesFromUserAndReport');
-    
-    final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId');
 
-    final ListResult photosList = await rPhotos.listAll();
-    //print('fetchResponseImagesFromReport quantity : ${ photosList.items.length }');
     List<String> photosUrlList = [];
-    String pivot;
-    for(Reference photoRef in photosList.items) {
-      pivot = await photoRef.getDownloadURL();      
-      photosUrlList.add(pivot);
-      //print('fetchImagesFromReport : B : ${ photosUrlList.length }');
+    try {
+      final Reference rPhotos = _fbStorage.ref('/response-photos/$userId/$reportId');
+      final ListResult photosList = await rPhotos.listAll();
+      //print('fetchResponseImagesFromReport quantity : ${ photosList.items.length }');
+
+      String pivot;
+      for(Reference photoRef in photosList.items) {
+        pivot = await photoRef.getDownloadURL();
+        photosUrlList.add(pivot);
+        //print('fetchImagesFromReport : B : ${ photosUrlList.length }');
+      }
+      //print('fetchImagesFromReport : C : ${ photosUrlList.length }');
+    } catch(error) {
+      logMsg('report_repository', msg: 'fetchResponseImagesFromUserAndReport > $error');
     }
-    //print('fetchImagesFromReport : C : ${ photosUrlList.length }');
     return photosUrlList;
   }
 
@@ -176,9 +213,8 @@ class ReportRepository {
     logMsg('report_repository', msg: 'uploadResponseImage');
 
     late String publicUrlImage;
-    final Reference rImage = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
-
     try {
+      final Reference rImage = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
       await rImage.putData(imageBytes);
       publicUrlImage = await rImage.getDownloadURL();
     } on FirebaseException catch (e) {
@@ -196,9 +232,8 @@ class ReportRepository {
   ) async {
     logMsg('report_repository', msg: 'deleteResponseImage');
 
-    final Reference rImage = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
-
     try {
+      final Reference rImage = _fbStorage.ref('/response-photos/$userId/$reportId/$imageName');
       await rImage.delete();
     } on FirebaseException catch (e) {
       logMsg('report_repository', msg: 'deleteResponseImage > error : $e');
@@ -207,8 +242,16 @@ class ReportRepository {
 
   // Generic helper for fetching images
   Future<List<String>> _fetchImages(String path) async {
-    final ListResult result = await _fbStorage.ref(path).listAll();
-    return Future.wait(result.items.map((ref) => ref.getDownloadURL()));
+    logMsg('report_repository', msg: '_fetchImages');
+
+    List<String> images = [];
+    try {
+      final ListResult result = await _fbStorage.ref(path).listAll();
+      images = await Future.wait(result.items.map((ref) => ref.getDownloadURL()));
+    } catch(error) {
+      logMsg('report_repository', msg: '_fetchImages > $error');
+    }
+    return images;
   }
 
   Future<List<String>> fetchReportImages(

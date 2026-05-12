@@ -80,7 +80,9 @@ class ReportViewModel extends ChangeNotifier {
     logMsg('report_view_model', msg: 'ReportViewModel');
 
     _subscriptions.add(
-      _reportRepository.fetchReportStatusStream().listen((ReportStatus status) {
+      _reportRepository.fetchReportStatusStream().handleError((error) {
+        logMsg('report_view_model', msg: 'fetchReportStatusStream $error');
+      }).listen((ReportStatus status) {
         logMsg('report_view_model', msg: 'fetchReportStatusStream');
         _reportStatus = status;
         _selectedStatus = status.values.first;
@@ -90,7 +92,9 @@ class ReportViewModel extends ChangeNotifier {
     );
 
     _subscriptions.add(
-      _reportRepository.fetchReportTypeStream().listen((ReportType type) {
+      _reportRepository.fetchReportTypeStream().handleError((error) {
+        logMsg('report_view_model', msg: 'fetchReportTypeStream $error');
+      }).listen((ReportType type) {
         logMsg('report_view_model', msg: 'fetchReportTypeStream');
         _reportType = type;
         _selectedType = type.values.first;
@@ -109,7 +113,9 @@ class ReportViewModel extends ChangeNotifier {
     _reportsSubscription = _reportRepository.fetchReports(
       _dateFrom,
       _dateTo,
-    ).listen((Map<String, Report> reports) {
+    ).handleError((error) {
+      logMsg('report_view_model', msg: 'fetchReports $error');
+    }).listen((Map<String, Report> reports) {
       logMsg('report_view_model', msg: 'fetchReports listen id: ${ _selectedStatus.id }');
 
       // If the status is uninitialized(0) or all(1), show all reports
@@ -168,10 +174,14 @@ class ReportViewModel extends ChangeNotifier {
     // Set the current report
     _currentReport = _reportMap[reportId] ?? Report(id: empty);
 
-    await Future.wait([
-      _fetchResponse(), // Get the response of the selected report
-      _getPhotos(), // Get the photos of the selected report
-    ]);
+    try {
+      await Future.wait([
+        _fetchResponse(), // Get the response of the selected report
+        _getPhotos(), // Get the photos of the selected report
+      ]);
+    } catch(error) {
+      logMsg('report_view_model', msg: 'fetchReportData > catch $error');
+    }
 
     _showReportCards = true;
     _isLoading = false;
